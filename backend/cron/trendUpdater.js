@@ -114,6 +114,7 @@ async function runUpdater() {
       
       const { error: deleteError } = await supabase.from('products').delete().neq('id', 0); 
       const { error: insertError } = await supabase.from('products').insert(fallbackProducts);
+      if (insertError) console.error("Insert Error:", insertError);
       console.log("Fallback data with real images inserted.");
       return;
     }
