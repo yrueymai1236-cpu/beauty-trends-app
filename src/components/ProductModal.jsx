@@ -67,7 +67,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                   Amazonで探す
                 </a>
                 <a 
-                  href={`https://search.rakuten.co.jp/search/mall/${encodeURIComponent(product.brand + ' ' + product.name)}/`} 
+                  href={`https://hb.afl.rakuten.co.jp/ichiba/5575e209.dc820559.5575e20a.58f7287d/?pc=${encodeURIComponent('https://search.rakuten.co.jp/search/mall/' + encodeURIComponent(product.brand + ' ' + product.name) + '/')}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="aff-btn rakuten-btn"
