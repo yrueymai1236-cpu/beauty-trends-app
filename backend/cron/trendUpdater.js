@@ -37,29 +37,84 @@ async function runUpdater() {
       console.warn("Apify scraping failed or timed out, falling back to backup posts.");
     }
 
-    // API制限などで取得できなかった場合のフォールバック（画面が空になるのを防ぐため大量データを用意）
     if (!samplePosts) {
-      console.log("Using large fallback JSON data due to empty Apify result.");
-      const fallbackProducts = [];
-      const categories = ['スキンケア', 'メイクアップ', 'ヘアケア'];
-      const brands = ['キャンメイク', 'ロムアンド', 'KATE', 'セザンヌ', 'TIRTIR', 'VT', 'オバジ', 'キュレル', 'YOLU', 'フィーノ'];
+      console.log("Using real fallback cosmetics due to empty Apify result.");
       
-      for(let i=1; i<=30; i++) {
+      const realCosmetics = [
+        { brand: 'KATE', name: 'リップモンスター', category: 'メイクアップ', subCategory: 'リップ' },
+        { brand: 'キャンメイク', name: 'マシュマロフィニッシュパウダー', category: 'メイクアップ', subCategory: 'フェイスパウダー' },
+        { brand: 'セザンヌ', name: 'パールグロウハイライト', category: 'メイクアップ', subCategory: 'ハイライト' },
+        { brand: 'ロムアンド', name: 'ジューシーラスティングティント', category: 'メイクアップ', subCategory: 'リップ' },
+        { brand: 'TIRTIR', name: 'マスクフィットレッドクッション', category: 'メイクアップ', subCategory: 'ファンデーション' },
+        { brand: 'VT', name: 'CICA デイリースージングマスク', category: 'スキンケア', subCategory: 'パック' },
+        { brand: 'オバジ', name: 'オバジC25セラム ネオ', category: 'スキンケア', subCategory: '美容液' },
+        { brand: 'キュレル', name: '潤浸保湿フェイスクリーム', category: 'スキンケア', subCategory: 'クリーム' },
+        { brand: 'YOLU', name: 'カームナイトリペアシャンプー', category: 'ヘアケア', subCategory: 'シャンプー' },
+        { brand: 'フィーノ', name: 'プレミアムタッチ 浸透美容液ヘアマスク', category: 'ヘアケア', subCategory: 'トリートメント' },
+        { brand: '無印良品', name: 'マイルド洗顔フォーム', category: 'スキンケア', subCategory: '洗顔' },
+        { brand: 'メラノCC', name: '薬用しみ対策 美白美容液', category: 'スキンケア', subCategory: '美容液' },
+        { brand: 'なめらか本舗', name: '豆乳イソフラボン リンクルアイクリーム', category: 'スキンケア', subCategory: 'アイクリーム' },
+        { brand: 'イプサ', name: 'ザ・タイムR アクア', category: 'スキンケア', subCategory: '化粧水' },
+        { brand: 'ルルルン', name: 'ルルルンピュア エブリーズ', category: 'スキンケア', subCategory: 'パック' },
+        { brand: 'マキアージュ', name: 'ドラマティックスキンセンサーベース', category: 'メイクアップ', subCategory: '下地' },
+        { brand: 'ディオール', name: 'ディオール アディクト リップ マキシマイザー', category: 'メイクアップ', subCategory: 'リップ' },
+        { brand: 'エクセル', name: 'スキニーリッチシャドウ', category: 'メイクアップ', subCategory: 'アイシャドウ' },
+        { brand: 'キャンメイク', name: 'クリーミータッチライナー', category: 'メイクアップ', subCategory: 'アイライナー' },
+        { brand: 'デジャヴュ', name: '塗るつけまつげ ラッシュアップ', category: 'メイクアップ', subCategory: 'マスカラ' },
+        { brand: '＆honey', name: 'ディープモイスト シャンプー', category: 'ヘアケア', subCategory: 'シャンプー' },
+        { brand: 'ナプラ', name: 'N. ポリッシュオイル', category: 'ヘアケア', subCategory: 'ヘアオイル' },
+        { brand: 'オルビス', name: 'エッセンスインヘアミルク', category: 'ヘアケア', subCategory: 'ヘアミルク' },
+        { brand: 'ミジャンセン', name: 'パーフェクトセラム', category: 'ヘアケア', subCategory: 'ヘアオイル' },
+        { brand: 'パンテーン', name: 'マカロン ヘアマスク', category: 'ヘアケア', subCategory: 'トリートメント' },
+        { brand: 'コスメデコルテ', name: 'リポソーム アドバンスト リペアセラム', category: 'スキンケア', subCategory: '美容液' },
+        { brand: 'ポール＆ジョー', name: 'モイスチュアライジング ファンデーション プライマー', category: 'メイクアップ', subCategory: '下地' },
+        { brand: 'ウカ', name: 'スカルプブラシ ケンザン', category: 'ヘアケア', subCategory: 'その他' },
+        { brand: 'イニスフリー', name: 'ノーセバム ミネラルパウダー', category: 'メイクアップ', subCategory: 'フェイスパウダー' },
+        { brand: 'ジルスチュアート', name: 'リップブーケ セラム', category: 'メイクアップ', subCategory: 'リップ' }
+      ];
+
+      const fallbackProducts = [];
+      const RAKUTEN_APP_ID = "38167525-75f5-4a72-84f7-e87314137bd6";
+
+      for (let i = 0; i < realCosmetics.length; i++) {
+        const item = realCosmetics[i];
+        let imageUrl = null;
+        
+        try {
+          // 楽天APIから本物の画像を取得
+          const query = encodeURIComponent(`${item.brand} ${item.name}`);
+          const res = await fetch(`https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?format=json&keyword=${query}&applicationId=${RAKUTEN_APP_ID}&hits=1`);
+          const data = await res.json();
+          if (data.Items && data.Items.length > 0) {
+            // 画像URLを抽出（高画質があればそれを使う）
+            const itemObj = data.Items[0].Item;
+            if (itemObj.mediumImageUrls && itemObj.mediumImageUrls.length > 0) {
+              imageUrl = itemObj.mediumImageUrls[0].imageUrl.replace('?_ex=128x128', '');
+            }
+          }
+        } catch (e) {
+          console.log("Failed to fetch image for", item.name);
+        }
+
         fallbackProducts.push({
-          name: `トレンドアイテム ${i}`,
-          brand: brands[i % brands.length],
-          category: categories[i % categories.length],
-          subCategory: 'その他',
-          priceValue: 1000 + (i * 100),
+          name: item.name,
+          brand: item.brand,
+          category: item.category,
+          subCategory: item.subCategory,
+          priceValue: 1500 + (i * 100),
           likes: 5000 - (i * 100),
-          ageGroup: '10代〜20代',
-          source: 'Instagram'
+          ageGroup: '10代〜30代',
+          source: 'Instagram',
+          image: imageUrl // 取得できなければnullになり、フロントエンドでプレースホルダーが使われる
         });
+        
+        // 楽天APIの制限を避けるため少し待機
+        await new Promise(r => setTimeout(r, 200));
       }
       
       const { error: deleteError } = await supabase.from('products').delete().neq('id', 0); 
       const { error: insertError } = await supabase.from('products').insert(fallbackProducts);
-      console.log("Fallback data inserted.");
+      console.log("Fallback data with real images inserted.");
       return;
     }
 

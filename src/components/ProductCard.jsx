@@ -40,6 +40,7 @@ const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }
         </button>
       </div>
       <div className="product-info">
+        <div className="product-brand">{product.brand}</div>
         <h3 className="product-name">{product.name}</h3>
         
         <div className="product-recommenders">
