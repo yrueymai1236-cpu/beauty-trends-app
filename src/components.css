@@ -171,8 +171,8 @@
 /* Trend List & Product Card */
 .trend-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
   margin-bottom: 60px;
 }
 
@@ -195,7 +195,7 @@
 
 .product-image-wrapper {
   position: relative;
-  height: 200px;
+  height: 160px;
   overflow: hidden;
 }
 
@@ -277,18 +277,18 @@
 }
 
 .product-brand {
-  font-size: 13px;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-weight: 700;
 }
 
 .product-name {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   line-height: 1.3;
 }
 
@@ -597,9 +597,8 @@ body.dark-theme .favorite-btn {
 
 .filter-section {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  margin-bottom: 24px;
   flex-wrap: wrap;
   gap: 16px;
 }

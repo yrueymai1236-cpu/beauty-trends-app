@@ -120,8 +120,11 @@ function App() {
         
         {showFavorites && <h2 style={{marginBottom: '24px'}}>お気に入りリスト</h2>}
 
-        <div className="filters-row" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px'}}>
-          <div className="category-filters" style={{ flex: 1, minWidth: 0, maxWidth: '100%' }}>
+        <div className="filters-row" style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '16px'}}>
+          <div className="filter-section" style={{ margin: 0 }}>
+            <SortFilter sortType={sortType} setSortType={setSortType} />
+          </div>
+          <div className="category-filters" style={{ width: '100%', minWidth: 0 }}>
             <CategoryFilter 
               categories={categories} 
               activeCategory={activeCategory} 
@@ -132,9 +135,6 @@ function App() {
               activeSubCategory={activeSubCategory}
               setActiveSubCategory={setActiveSubCategory}
             />
-          </div>
-          <div className="filter-section">
-            <SortFilter sortType={sortType} setSortType={setSortType} />
           </div>
         </div>
 
