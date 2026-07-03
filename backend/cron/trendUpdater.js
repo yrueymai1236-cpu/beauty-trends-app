@@ -49,43 +49,47 @@ async function runUpdater() {
 
       const fallbackProducts = [];
 
-      for (let i = 0; i < realCosmetics.length; i++) {
-        const item = realCosmetics[i];
-        let imageUrl = null;
-        
+      for (const item of realCosmetics) {
+        let imageUrl = '';
+        let rating = 0;
+        let reviewCount = 0;
         try {
-          // スクレイピングで本物の画像を取得
-          const query = encodeURIComponent(`${item.brand} ${item.name}`);
-          const res = await axios.get(`https://search.rakuten.co.jp/search/mall/${query}/`, {
-            headers: {
-              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+          const query = item.brand + ' ' + item.name;
+          const response = await axios.get('https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601', {
+            params: {
+              applicationId: process.env.RAKUTEN_APP_ID || '1019079537947262807',
+              keyword: query,
+              format: 'json',
+              availability: 1,
+              hits: 1
             }
           });
-          const $ = cheerio.load(res.data);
-          let img = $('.searchresultitem img').first().attr('src');
-          if (img) {
-            // クエリパラメータを削除して高画質に
-            imageUrl = img.split('?')[0];
+          if (response.data && response.data.Items && response.data.Items.length > 0) {
+            const productData = response.data.Items[0].Item;
+            imageUrl = productData.mediumImageUrls[0].imageUrl;
+            rating = productData.reviewAverage || 0;
+            reviewCount = productData.reviewCount || 0;
           }
+          await new Promise(r => setTimeout(r, 1000));
         } catch (e) {
-          console.log("Failed to fetch image for", item.name);
+          console.log(`Failed to fetch image and rating for ${item.name}`);
         }
 
         fallbackProducts.push({
+          id: `trend-${item.name}-${Date.now()}`,
           name: item.name,
           brand: item.brand,
           category: item.category,
           subCategory: item.subCategory,
-          priceValue: 1500 + (i * 100),
-          likes: 5000 - (i * 100),
-          ageGroup: '10代〜30代',
+          description: item.description,
+          price: '価格情報なし',
+          likes: Math.floor(Math.random() * 5000) + 1000,
+          rating: rating,
+          reviewCount: reviewCount,
           source: 'Instagram',
-          image: imageUrl,
-          description: item.description
+          postUrl: 'https://instagram.com/explore/tags/コスメ',
+          image: imageUrl
         });
-        
-        // 楽天APIの制限を避けるため少し待機
-        await new Promise(r => setTimeout(r, 200));
       }
       
       const { error: deleteError } = await supabase.from('products').delete().neq('id', 0); 
