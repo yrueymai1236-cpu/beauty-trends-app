@@ -171,8 +171,8 @@
 /* Trend List & Product Card */
 .trend-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
   margin-bottom: 60px;
 }
 
@@ -195,7 +195,7 @@
 
 .product-image-wrapper {
   position: relative;
-  height: 260px;
+  height: 200px;
   overflow: hidden;
 }
 
