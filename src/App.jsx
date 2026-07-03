@@ -9,7 +9,7 @@ import ProductModal from './components/ProductModal';
 import SkeletonCard from './components/SkeletonCard';
 import './components.css';
 
-const categories = ["すべて", "スキンケア", "メイクアップ", "ヘアケア", "フレグランス"];
+const categories = ["すべて", "スキンケア", "メイクアップ", "ヘアケア"];
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -21,7 +21,6 @@ function App() {
   const [showFavorites, setShowFavorites] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('すべて');
   const [isLoading, setIsLoading] = useState(true);
   
   const [activeCategory, setActiveCategory] = useState('すべて');
@@ -94,11 +93,6 @@ function App() {
     );
   }
 
-  // カテゴリーによるフィルタリング
-  if (selectedCategory !== 'すべて') {
-    finalProducts = finalProducts.filter(p => p.category && p.category.includes(selectedCategory));
-  }
-
   // 最大10件に制限
   finalProducts = finalProducts.slice(0, 10);
 
@@ -139,19 +133,8 @@ function App() {
             />
           </div>
           <div className="filter-section">
-          <div className="category-tabs animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            {['すべて', 'スキンケア', 'メイクアップ', 'ヘアケア'].map(cat => (
-              <button 
-                key={cat} 
-                className={`category-tab ${selectedCategory === cat ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(cat)}
-              >
-                {cat}
-              </button>
-            ))}
+            <SortFilter sortType={sortType} setSortType={setSortType} />
           </div>
-          <SortFilter sortType={sortType} setSortType={setSortType} />
-        </div>
         </div>
 
         {isLoading ? (
