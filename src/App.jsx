@@ -10,7 +10,7 @@ import SkeletonCard from './components/SkeletonCard';
 import Sidebar from './components/Sidebar';
 import './components.css';
 
-const categories = ["すべて", "スキンケア", "メイクアップ", "ヘアケア"];
+const categories = ["すべて", "スキンケア", "メイクアップ", "ヘアケア", "ボディケア", "フレグランス"];
 
 function App() {
   const [products, setProducts] = useState([]);
