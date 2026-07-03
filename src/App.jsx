@@ -31,7 +31,10 @@ function App() {
   useEffect(() => {
     const fetchTrends = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/trends');
+        const response = await fetch('/api/trends');
+        if (!response.ok) {
+          throw new Error('データの取得に失敗しました');
+        }
         const data = await response.json();
         setProducts(data);
       } catch (error) {
