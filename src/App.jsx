@@ -153,7 +153,7 @@ function App() {
               />
             )}
           </div>
-          <Sidebar />
+          <Sidebar activeCategory={activeCategory} />
         </div>
       </main>
 
