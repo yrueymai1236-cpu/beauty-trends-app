@@ -595,6 +595,56 @@ body.dark-theme .favorite-btn {
   font-size: 14px;
 }
 
+.filter-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* --- Category Tabs --- */
+.category-tabs {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none; /* Firefox */
+}
+.category-tabs::-webkit-scrollbar {
+  display: none; /* Chrome */
+}
+
+.category-tab {
+  padding: 8px 20px;
+  border-radius: 24px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.category-tab:hover {
+  background-color: var(--border-color);
+  color: var(--text-color);
+}
+
+.category-tab.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(255, 107, 129, 0.3);
+}
+
+.dark-mode .category-tab.active {
+  background: var(--primary-color);
+}
+
 .review-header {
   display: flex;
   justify-content: space-between;
