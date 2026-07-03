@@ -21,8 +21,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
           <img src={imageUrl} alt={product.name} className="modal-image" />
           <div className="modal-info">
             <span className="source-tag" style={{position: 'relative', top: 0, left: 0, display: 'inline-block'}}>{product.source}</span>
-            <div className="product-brand" style={{marginTop: '16px'}}>{product.brand}</div>
-            <h2 className="modal-title">{product.name}</h2>
+            <h2 className="modal-title" style={{marginTop: '16px'}}>{product.name}</h2>
             <p className="modal-desc">{product.description || "現在AIが詳細情報を収集中です..."}</p>
             
             <div className="modal-section">
@@ -59,7 +58,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
             <div className="modal-footer">
               <div className="affiliate-buttons">
                 <a 
-                  href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(product.brand + ' ' + product.name)}&tag=hurikake09-22`} 
+                  href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(product.name)}&tag=hurikake09-22`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="aff-btn amazon-btn"
@@ -67,7 +66,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                   Amazonで探す
                 </a>
                 <a 
-                  href={`https://hb.afl.rakuten.co.jp/ichiba/5575e209.dc820559.5575e20a.58f7287d/?pc=${encodeURIComponent('https://search.rakuten.co.jp/search/mall/' + encodeURIComponent(product.brand + ' ' + product.name) + '/')}`} 
+                  href={`https://hb.afl.rakuten.co.jp/ichiba/5575e209.dc820559.5575e20a.58f7287d/?pc=${encodeURIComponent('https://search.rakuten.co.jp/search/mall/' + encodeURIComponent(product.name) + '/')}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="aff-btn rakuten-btn"
@@ -75,7 +74,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                   楽天市場で探す
                 </a>
                 <a 
-                  href={`https://www.qoo10.jp/s/goodssearch?keyword=${encodeURIComponent(product.brand + ' ' + product.name)}&su=1467680797`} 
+                  href={`https://www.qoo10.jp/s/goodssearch?keyword=${encodeURIComponent(product.name)}&su=1467680797`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="aff-btn qoo10-btn"
