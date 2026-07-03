@@ -2,8 +2,19 @@ import React from 'react';
 
 const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }) => {
   const delay = `${0.3 + index * 0.1}s`;
-  const rank = product.originalRank;
+  const rank = product.originalRank || index + 1;
   const rankClass = rank <= 3 ? `rank-${rank}` : '';
+
+  // 画像がない場合の美しいプレースホルダー画像（美容系Unsplash画像）
+  const fallbackImages = [
+    "https://images.unsplash.com/photo-1596462502278-27bfdc403348?w=500&auto=format&fit=crop&q=60",
+    "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=500&auto=format&fit=crop&q=60",
+    "https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=500&auto=format&fit=crop&q=60",
+    "https://images.unsplash.com/photo-1571781926291-c477eb3af53e?w=500&auto=format&fit=crop&q=60",
+    "https://images.unsplash.com/photo-1617897903246-719242758050?w=500&auto=format&fit=crop&q=60"
+  ];
+  // IDを使ってランダムかつ固定の画像を選ぶ
+  const imageUrl = product.image || fallbackImages[(product.id || index) % fallbackImages.length];
 
   return (
     <div className="product-card animate-fade-in" style={{ animationDelay: delay }} onClick={() => onOpenModal(product)}>
@@ -17,7 +28,7 @@ const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }
           </svg>
           {product.source}
         </span>
-        <img src={product.image} alt={product.name} className="product-image" />
+        <img src={imageUrl} alt={product.name} className="product-image" />
         <button 
           className={`favorite-btn ${isFavorite ? 'active' : ''}`}
           onClick={(e) => {
