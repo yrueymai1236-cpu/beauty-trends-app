@@ -2,6 +2,8 @@ require('dotenv').config();
 const { ApifyClient } = require('apify-client');
 const { GoogleGenAI } = require('@google/genai');
 const supabase = require('../db/supabaseClient');
+const axios = require('axios');
+const cheerio = require('cheerio');
 
 const apifyClient = new ApifyClient({ token: process.env.APIFY_API_TOKEN });
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
@@ -74,23 +76,24 @@ async function runUpdater() {
       ];
 
       const fallbackProducts = [];
-      const RAKUTEN_APP_ID = "38167525-75f5-4a72-84f7-e87314137bd6";
 
       for (let i = 0; i < realCosmetics.length; i++) {
         const item = realCosmetics[i];
         let imageUrl = null;
         
         try {
-          // 楽天APIから本物の画像を取得
+          // スクレイピングで本物の画像を取得
           const query = encodeURIComponent(`${item.brand} ${item.name}`);
-          const res = await fetch(`https://app.rakuten.co.jp/services/api/IchibaItem/Search/20220601?format=json&keyword=${query}&applicationId=${RAKUTEN_APP_ID}&hits=1`);
-          const data = await res.json();
-          if (data.Items && data.Items.length > 0) {
-            // 画像URLを抽出（高画質があればそれを使う）
-            const itemObj = data.Items[0].Item;
-            if (itemObj.mediumImageUrls && itemObj.mediumImageUrls.length > 0) {
-              imageUrl = itemObj.mediumImageUrls[0].imageUrl.replace('?_ex=128x128', '');
+          const res = await axios.get(`https://search.rakuten.co.jp/search/mall/${query}/`, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
+          });
+          const $ = cheerio.load(res.data);
+          let img = $('.searchresultitem img').first().attr('src');
+          if (img) {
+            // クエリパラメータを削除して高画質に
+            imageUrl = img.split('?')[0];
           }
         } catch (e) {
           console.log("Failed to fetch image for", item.name);
