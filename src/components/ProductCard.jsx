@@ -72,7 +72,7 @@ const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }
           <div className="product-metrics" style={{ display: 'flex', alignItems: 'center' }}>
             {product.rating > 0 && (
               <span className="product-rating" style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: '#ffb142', fontWeight: 600 }}>
-                ⭐ {product.rating} <span style={{ color: 'var(--text-secondary)', fontSize: '11px', fontWeight: 400 }}>({product.reviewCount}件)</span>
+                ⭐ {product.rating} <span style={{ color: 'var(--text-secondary)', fontSize: '11px', fontWeight: 400 }}>({product.reviewcount}件)</span>
               </span>
             )}
             <span className="product-likes" style={{ marginLeft: '12px' }}>
