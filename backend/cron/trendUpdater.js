@@ -15,18 +15,39 @@ async function runUpdater() {
   }
 
   try {
-    // 1. Apifyを使ってInstagram/TikTokの最新ハッシュタグ検索
+    // 1. Apifyを使ってInstagramの最新ハッシュタグ検索（本稼働）
     console.log("Fetching social media data via Apify...");
-    // 実際のActor Callの例:
-    // const run = await apifyClient.actor("apify/instagram-hashtag-scraper").call({ hashtags: ["美容", "コスメ"] });
-    // const { items } = await apifyClient.dataset(run.defaultDatasetId).listItems();
+    let samplePosts = "";
     
-    // サンプルテキスト（APIが取ってきた投稿文のイメージ）
-    const samplePosts = `
-      1. キャンメイクのむちぷるティント、新色の04番めっちゃ可愛い！発色良くて500円くらい。絶対買うべき。
-      2. ロムアンドのジューシーラスティングティントはやっぱり神。色持ち良すぎる。
-      3. オバジC25セラム、高いけど肌の調子爆上がりした。スキンケアの最終兵器。
-    `;
+    try {
+      const run = await apifyClient.actor("apify/instagram-scraper").call({ 
+          search: "コスメトレンド",
+          searchType: "hashtag",
+          resultsLimit: 5
+      });
+      const { items } = await apifyClient.dataset(run.defaultDatasetId).listItems();
+      
+      items.forEach((item, index) => {
+          if (item.caption) {
+              samplePosts += `${index + 1}. ${item.caption}\\n`;
+          }
+      });
+      console.log(`Apify fetched ${items.length} items.`);
+    } catch (apifyError) {
+      console.warn("Apify scraping failed or timed out, falling back to backup posts.");
+    }
+
+    // API制限などで取得できなかった場合のフォールバック（画面が空になるのを防ぐため）
+    if (!samplePosts) {
+      samplePosts = `
+        1. キャンメイクのむちぷるティント、新色の04番めっちゃ可愛い！発色良くて500円くらい。絶対買うべき。
+        2. ロムアンドのジューシーラスティングティントはやっぱり神。色持ち良すぎる。
+        3. オバジC25セラム、高いけど肌の調子爆上がりした。スキンケアの最終兵器。
+        4. TIRTIRのクッションファンデ、マスクに付かなくて最強。崩れにくい。
+        5. エクセルのスキニーリッチシャドウ、SR11はイエベ春にぴったりすぎるブラウン。
+        6. ケイト(KATE)のリップモンスター新色、めちゃくちゃバズってる！
+      `;
+    }
 
     // 2. Gemini APIを使ってテキストから商品リストを抽出
     console.log("Analyzing text with Gemini AI...");
