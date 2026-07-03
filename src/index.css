@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-color: #ff6b81; /* Soft energetic pink */
+  --primary-gradient: linear-gradient(135deg, #ff6b81 0%, #ff8e9b 100%);
+  --secondary-color: #2f3542; /* Dark elegant contrast */
+  --bg-color: #fcfdfe; /* Very light cool background */
+  --card-bg: #ffffff;
+  --text-primary: #2d3436;
+  --text-secondary: #636e72;
+  --border-color: #f1f2f6;
+  --tag-bg: #ffe4e8;
+  --tag-text: #e84393;
+  
+  --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 20px 40px rgba(255, 107, 129, 0.15);
+
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+body.dark-theme {
+  --bg-color: #121212;
+  --card-bg: #1e1e1e;
+  --text-primary: #f5f6fa;
+  --text-secondary: #a4b0be;
+  --border-color: #2f3542;
+  --tag-bg: #2f3542;
+  --tag-text: #ff8e9b;
+  --shadow-sm: 0 4px 10px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 15px 35px rgba(0, 0, 0, 0.4);
+  --shadow-hover: 0 20px 40px rgba(255, 107, 129, 0.25);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Outfit', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  outline: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s var(--transition) forwards;
+}
+
+/* Utility classes */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.text-gradient {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
