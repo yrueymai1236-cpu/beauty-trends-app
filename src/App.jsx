@@ -7,6 +7,7 @@ import SortFilter from './components/SortFilter';
 import TrendList from './components/TrendList';
 import ProductModal from './components/ProductModal';
 import SkeletonCard from './components/SkeletonCard';
+import Sidebar from './components/Sidebar';
 import './components.css';
 
 const categories = ["すべて", "スキンケア", "メイクアップ", "ヘアケア"];
@@ -137,18 +138,23 @@ function App() {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="trend-grid">
-            {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
+        <div className="app-content-wrapper">
+          <div className="main-content">
+            {isLoading ? (
+              <div className="trend-grid">
+                {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
+              </div>
+            ) : (
+              <TrendList 
+                products={finalProducts} 
+                favorites={favorites} 
+                toggleFavorite={toggleFavorite}
+                onOpenModal={setModalProduct}
+              />
+            )}
           </div>
-        ) : (
-          <TrendList 
-            products={finalProducts} 
-            favorites={favorites} 
-            toggleFavorite={toggleFavorite}
-            onOpenModal={setModalProduct}
-          />
-        )}
+          <Sidebar />
+        </div>
       </main>
 
       <ProductModal 
