@@ -59,7 +59,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
             <div className="modal-footer">
               <div className="affiliate-buttons">
                 <a 
-                  href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(product.brand + ' ' + product.name)}&tag=YOUR_AMAZON_ID`} 
+                  href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(product.brand + ' ' + product.name)}&tag=hurikake09-22`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="aff-btn amazon-btn"
