@@ -634,6 +634,69 @@ body.dark-theme .favorite-btn {
   color: var(--text-color);
 }
 
+/* --- Monetization & Affiliate Buttons --- */
+.modal-footer {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.affiliate-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aff-btn {
+  display: block;
+  text-align: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+  color: white;
+}
+
+.aff-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-2px);
+}
+
+.amazon-btn {
+  background-color: #FF9900;
+  box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3);
+}
+
+.rakuten-btn {
+  background-color: #BF0000;
+  box-shadow: 0 4px 12px rgba(191, 0, 0, 0.3);
+}
+
+.qoo10-btn {
+  background-color: #008DDE;
+  box-shadow: 0 4px 12px rgba(0, 141, 222, 0.3);
+}
+
+.share-btn {
+  background-color: #000 !important;
+  color: #fff !important;
+  border: none !important;
+}
+.share-btn svg {
+  fill: #fff;
+}
+.dark-mode .share-btn {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+.dark-mode .share-btn svg {
+  fill: #000;
+}
+
 .category-tab.active {
   background: var(--primary-color);
   color: white;

@@ -57,8 +57,32 @@ const ProductModal = ({ product, isOpen, onClose }) => {
             )}
 
             <div className="modal-footer">
-              <span className="product-price">{product.price}</span>
-              <button className="buy-button">公式サイトで見る</button>
+              <div className="affiliate-buttons">
+                <a 
+                  href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(product.brand + ' ' + product.name)}&tag=YOUR_AMAZON_ID`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="aff-btn amazon-btn"
+                >
+                  Amazonで探す
+                </a>
+                <a 
+                  href={`https://search.rakuten.co.jp/search/mall/${encodeURIComponent(product.brand + ' ' + product.name)}/`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="aff-btn rakuten-btn"
+                >
+                  楽天市場で探す
+                </a>
+                <a 
+                  href={`https://www.qoo10.jp/s/goodssearch?keyword=${encodeURIComponent(product.brand + ' ' + product.name)}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="aff-btn qoo10-btn"
+                >
+                  Qoo10で探す
+                </a>
+              </div>
             </div>
           </div>
         </div>
