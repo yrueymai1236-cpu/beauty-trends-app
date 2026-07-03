@@ -75,7 +75,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                   楽天市場で探す
                 </a>
                 <a 
-                  href={`https://www.qoo10.jp/s/goodssearch?keyword=${encodeURIComponent(product.brand + ' ' + product.name)}`} 
+                  href={`https://www.qoo10.jp/s/goodssearch?keyword=${encodeURIComponent(product.brand + ' ' + product.name)}&su=1467680797`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="aff-btn qoo10-btn"
