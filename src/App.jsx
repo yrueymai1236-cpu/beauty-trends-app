@@ -120,8 +120,8 @@ function App() {
         
         {showFavorites && <h2 style={{marginBottom: '24px'}}>お気に入りリスト</h2>}
 
-        <div className="filters-row" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap'}}>
-          <div className="category-filters">
+        <div className="filters-row" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px'}}>
+          <div className="category-filters" style={{ flex: 1, minWidth: 0, maxWidth: '100%' }}>
             <CategoryFilter 
               categories={categories} 
               activeCategory={activeCategory} 
