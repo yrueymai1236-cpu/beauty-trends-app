@@ -94,8 +94,8 @@ function App() {
     );
   }
 
-  // 最大10件に制限
-  finalProducts = finalProducts.slice(0, 10);
+  // 制限なし（もしくは多めに制限）
+  // finalProducts = finalProducts.slice(0, 30);
 
   if (sortType === 'price-asc') {
     finalProducts.sort((a, b) => (a.priceValue || 99999) - (b.priceValue || 99999));
