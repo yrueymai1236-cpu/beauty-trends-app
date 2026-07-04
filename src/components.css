@@ -315,12 +315,14 @@
   gap: 3px;
   color: #ffb142;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .review-count {
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .product-price-row {
@@ -388,6 +390,7 @@
   align-items: center;
   gap: 4px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .heart-icon-small {
