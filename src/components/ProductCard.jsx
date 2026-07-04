@@ -17,7 +17,7 @@ const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }
   const imageUrl = product.image || fallbackImages[(product.id || index) % fallbackImages.length];
 
   return (
-    <div className="product-card animate-fade-in" style={{ animationDelay: delay }} onClick={() => onOpenModal(product)}>
+    <article className="product-card animate-fade-in" style={{ animationDelay: delay }} onClick={() => onOpenModal(product)}>
       <div className="product-image-wrapper">
         <div className={`ranking-badge ${rankClass}`}>
           {rank}
@@ -86,7 +86,7 @@ const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 
