@@ -28,6 +28,7 @@ function App() {
   const [activeSubCategory, setActiveSubCategory] = useState('すべて');
   const [sortType, setSortType] = useState('recommend');
   const [modalProduct, setModalProduct] = useState(null);
+  const [displayCount, setDisplayCount] = useState(20);
 
   useEffect(() => {
     const fetchTrends = async () => {
@@ -62,6 +63,10 @@ function App() {
   useEffect(() => {
     setActiveSubCategory('すべて');
   }, [activeCategory]);
+
+  useEffect(() => {
+    setDisplayCount(20);
+  }, [activeCategory, activeSubCategory, sortType, searchQuery, showFavorites]);
 
   const toggleFavorite = (id) => {
     setFavorites(prev => prev.includes(id) ? prev.filter(fId => fId !== id) : [...prev, id]);
@@ -107,6 +112,9 @@ function App() {
     finalProducts.sort((a, b) => a.originalRank - b.originalRank);
   }
 
+  const displayedProducts = finalProducts.slice(0, displayCount);
+  const hasMore = displayCount < finalProducts.length;
+
   return (
     <div className={`container ${isDarkMode ? 'dark-mode' : ''}`}>
       <Header 
@@ -148,10 +156,12 @@ function App() {
               </div>
             ) : (
               <TrendList 
-                products={finalProducts} 
+                products={displayedProducts} 
                 favorites={favorites} 
                 toggleFavorite={toggleFavorite}
                 onOpenModal={setModalProduct}
+                hasMore={hasMore}
+                onLoadMore={() => setDisplayCount(prev => prev + 20)}
               />
             )}
           </div>
