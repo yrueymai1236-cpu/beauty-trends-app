@@ -1111,6 +1111,61 @@ body.dark-theme .shimmer::after {
   }
 }
 
+/* Scroll to Top Button */
+.scroll-to-top-btn {
+  position: fixed;
+  bottom: 96px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.scroll-to-top-btn.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+.scroll-to-top-btn:hover {
+  background: var(--tag-bg);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-3px);
+}
+
+.scroll-to-top-btn svg {
+  transition: transform 0.2s;
+}
+
+.scroll-to-top-btn:hover svg {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 480px) {
+  .scroll-to-top-btn {
+    bottom: 90px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+  }
+}
+
 @media (max-width: 480px) {
   /* 3 columns on mobile */
   .trend-grid {

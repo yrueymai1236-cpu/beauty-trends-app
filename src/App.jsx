@@ -30,6 +30,19 @@ function App() {
   const [sortType, setSortType] = useState('recommend');
   const [modalProduct, setModalProduct] = useState(null);
   const [displayCount, setDisplayCount] = useState(20);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     const fetchTrends = async () => {
@@ -177,6 +190,16 @@ function App() {
       />
 
       <AIChatWindow />
+
+      <button 
+        className={`scroll-to-top-btn ${showScrollTop ? 'visible' : ''}`} 
+        onClick={scrollToTop}
+        aria-label="Scroll to top"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </button>
     </div>
   );
 }
