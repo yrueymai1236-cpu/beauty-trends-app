@@ -8,6 +8,7 @@ import TrendList from './components/TrendList';
 import ProductModal from './components/ProductModal';
 import SkeletonCard from './components/SkeletonCard';
 import Sidebar from './components/Sidebar';
+import AIChatWindow from './components/AIChatWindow';
 import './components.css';
 
 const categories = ["すべて", "スキンケア", "メイクアップ", "ヘアケア", "ボディケア", "フレグランス"];
@@ -174,6 +175,8 @@ function App() {
         isOpen={!!modalProduct} 
         onClose={() => setModalProduct(null)} 
       />
+
+      <AIChatWindow />
     </div>
   );
 }

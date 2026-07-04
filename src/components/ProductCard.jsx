@@ -1,6 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }) => {
+  const [likesCount, setLikesCount] = useState(product.likes);
+  
+  const handleFavoriteClick = async (e) => {
+    e.stopPropagation();
+    const willBeFavorite = !isFavorite;
+    toggleFavorite(product.id);
+    
+    // Optimistic UI update
+    setLikesCount(prev => willBeFavorite ? prev + 1 : Math.max(0, prev - 1));
+
+    try {
+      const endpoint = willBeFavorite ? `/api/trends/${product.id}/like` : `/api/trends/${product.id}/unlike`;
+      await fetch(endpoint, { method: 'POST' });
+    } catch (err) {
+      console.error('Failed to update like', err);
+    }
+  };
   const delay = `${0.3 + index * 0.1}s`;
   const rank = product.originalRank || index + 1;
   const rankClass = rank <= 3 ? `rank-${rank}` : '';
@@ -31,10 +48,7 @@ const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }
         <img src={imageUrl} alt={product.name} className="product-image" />
         <button 
           className={`favorite-btn ${isFavorite ? 'active' : ''}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleFavorite(product.id);
-          }}
+          onClick={handleFavoriteClick}
         >
           {isFavorite ? '❤️' : '🤍'}
         </button>
@@ -81,7 +95,7 @@ const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }
               <svg className="heart-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
               </svg>
-              {product.likes}
+              {likesCount}
             </span>
           </div>
         </div>
