@@ -67,13 +67,20 @@ async function runUpdater() {
           // 簡易的にHTMLからレビュー数を取得する試み
           const firstItem = $('.searchresultitem').first();
           const reviewText = firstItem.find('.review').text() || '';
+          const priceText = firstItem.find('.price').text() || '';
           
           if (reviewText && reviewText.includes('件')) {
             const numStr = reviewText.replace(/[^0-9]/g, '');
             if (numStr) {
-            reviewcount = parseInt(numStr, 10);
+              reviewcount = parseInt(numStr, 10);
               rating = parseFloat((Math.random() * 1.0 + 4.0).toFixed(1));
             }
+          }
+
+          let extractedPrice = 0;
+          if (priceText) {
+            const numStrPrice = priceText.replace(/[^0-9]/g, '');
+            if (numStrPrice) extractedPrice = parseInt(numStrPrice, 10);
           }
 
           await new Promise(r => setTimeout(r, 1000));
@@ -82,13 +89,12 @@ async function runUpdater() {
         }
 
         fallbackProducts.push({
-          id: `trend-${item.name}-${Date.now()}`,
           name: item.name,
           brand: item.brand,
           category: item.category,
           subCategory: item.subCategory,
           description: item.description,
-          priceValue: 0,
+          priceValue: extractedPrice,
           likes: Math.floor(Math.random() * 5000) + 1000,
           rating: rating,
           reviewcount: reviewcount,

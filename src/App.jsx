@@ -99,8 +99,10 @@ function App() {
 
   if (sortType === 'price-asc') {
     finalProducts.sort((a, b) => (a.priceValue || 99999) - (b.priceValue || 99999));
+  } else if (sortType === 'price-desc') {
+    finalProducts.sort((a, b) => (b.priceValue || 0) - (a.priceValue || 0));
   } else if (sortType === 'likes-desc') {
-    finalProducts.sort((a, b) => (b.likesValue || 0) - (a.likesValue || 0));
+    finalProducts.sort((a, b) => (b.likes || 0) - (a.likes || 0));
   } else {
     finalProducts.sort((a, b) => a.originalRank - b.originalRank);
   }

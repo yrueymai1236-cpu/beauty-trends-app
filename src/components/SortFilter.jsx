@@ -10,6 +10,7 @@ const SortFilter = ({ sortType, setSortType }) => {
       >
         <option value="recommend">おすすめ順</option>
         <option value="price-asc">価格が安い順</option>
+        <option value="price-desc">価格が高い順</option>
         <option value="likes-desc">いいねが多い順</option>
       </select>
     </div>

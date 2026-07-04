@@ -67,7 +67,9 @@ const ProductCard = ({ product, index, isFavorite, toggleFavorite, onOpenModal }
         </div>
 
         <div className="product-meta">
-          <span className="product-price">{product.price}</span>
+          <span className="product-price">
+            {product.priceValue ? `¥${product.priceValue.toLocaleString()}` : '価格未定'}
+          </span>
           
           <div className="product-metrics" style={{ display: 'flex', alignItems: 'center' }}>
             {product.rating > 0 && (
