@@ -350,6 +350,7 @@
   font-weight: 700;
   font-size: 20px;
   color: var(--primary-color);
+  white-space: nowrap;
 }
 
 .product-likes {

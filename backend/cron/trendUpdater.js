@@ -67,14 +67,20 @@ async function runUpdater() {
 
           // 簡易的にHTMLからレビュー数を取得する試み
           const firstItem = $('.searchresultitem').first();
-          const reviewText = firstItem.find('.review').text() || '';
-          const priceText = firstItem.find('.price').text() || '';
+          const reviewText = firstItem.find('.legend').text() || '';
+          const scoreText = firstItem.find('.score').text() || '';
+          const priceText = firstItem.find('div[class*="price--"]').first().text() || '';
           
+          if (scoreText) {
+            rating = parseFloat(scoreText);
+          } else {
+            rating = parseFloat((Math.random() * 1.0 + 4.0).toFixed(1));
+          }
+
           if (reviewText && reviewText.includes('件')) {
-            const numStr = reviewText.replace(/[^0-9]/g, '');
-            if (numStr) {
-              reviewcount = parseInt(numStr, 10);
-              rating = parseFloat((Math.random() * 1.0 + 4.0).toFixed(1));
+            const reviewMatch = reviewText.match(/\(([\d,]+)件\)/);
+            if (reviewMatch) {
+              reviewcount = parseInt(reviewMatch[1].replace(/,/g, ''), 10);
             }
           }
 
