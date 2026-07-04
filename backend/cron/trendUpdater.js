@@ -53,6 +53,7 @@ async function runUpdater() {
         let imageUrl = '';
         let rating = 0;
         let reviewcount = 0;
+        let extractedPrice = 0;
         try {
           const query = encodeURIComponent(`${item.brand} ${item.name}`);
           const res = await axios.get(`https://search.rakuten.co.jp/search/mall/${query}/`, {
@@ -77,7 +78,6 @@ async function runUpdater() {
             }
           }
 
-          let extractedPrice = 0;
           if (priceText) {
             const numStrPrice = priceText.replace(/[^0-9]/g, '');
             if (numStrPrice) extractedPrice = parseInt(numStrPrice, 10);

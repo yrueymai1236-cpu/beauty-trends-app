@@ -516,12 +516,18 @@ body.dark-theme .favorite-btn {
     flex-direction: row;
   }
   .modal-image {
-    width: 45%;
+    flex: 0 0 45%;
+    max-width: 45%;
     height: auto !important;
-    object-fit: cover;
+    max-height: 80vh;
+    object-fit: contain;
+    background-color: var(--bg-color);
   }
   .modal-info {
-    width: 55%;
+    flex: 0 0 55%;
+    max-width: 55%;
+    max-height: 80vh;
+    overflow-y: auto;
   }
 }
 

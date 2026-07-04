@@ -21,7 +21,19 @@ const ProductModal = ({ product, isOpen, onClose }) => {
           <img src={imageUrl} alt={product.name} className="modal-image" />
           <div className="modal-info">
             <span className="source-tag" style={{position: 'relative', top: 0, left: 0, display: 'inline-block'}}>{product.source}</span>
-            <h2 className="modal-title" style={{marginTop: '16px'}}>{product.name}</h2>
+            <h2 className="modal-title" style={{marginTop: '16px', marginBottom: '8px'}}>{product.name}</h2>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+              <div className="modal-price" style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--primary-color)' }}>
+                {product.priceValue ? `¥${product.priceValue.toLocaleString()}` : '価格未定'}
+              </div>
+              {product.rating > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '15px', color: '#ffb142', fontWeight: 600 }}>
+                  ⭐ {product.rating} <span style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: 400 }}>({product.reviewcount}件)</span>
+                </div>
+              )}
+            </div>
+
             <p className="modal-desc">{product.description || "現在AIが詳細情報を収集中です..."}</p>
             
             <div className="modal-section">
