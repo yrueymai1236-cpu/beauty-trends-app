@@ -26,9 +26,18 @@ app.use((req, res) => {
 
 // --- Cron Job Setup ---
 // 毎日深夜0時0分に自動実行
-cron.schedule('0 0 * * *', () => {
+cron.schedule('0 0 * * *', async () => {
   console.log('Running daily trend updater cron job...');
-  runUpdater();
+  try {
+    await runUpdater();
+    console.log('Daily trend updater completed successfully.');
+    
+    // 更新後にXにポスト
+    const postX = require('./scripts/postX');
+    await postX();
+  } catch (err) {
+    console.error("Error running daily cron workflow:", err.message);
+  }
 });
 
 app.listen(PORT, () => {
