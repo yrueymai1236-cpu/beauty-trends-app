@@ -31,6 +31,76 @@ function App() {
   const [modalProduct, setModalProduct] = useState(null);
   const [displayCount, setDisplayCount] = useState(20);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [sharedIds, setSharedIds] = useState([]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shareParam = params.get('share');
+    if (shareParam) {
+      const ids = shareParam.split(',').map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+      setSharedIds(ids);
+    }
+  }, []);
+
+  const clearShareView = () => {
+    setSharedIds([]);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  };
+
+  const shareFavorites = () => {
+    if (favorites.length === 0) {
+      alert('お気に入りに商品がありません！まずはハートマークをタップして追加してください。');
+      return;
+    }
+    const shareUrl = `${window.location.origin}/?share=${favorites.join(',')}`;
+    navigator.clipboard.writeText(shareUrl);
+    alert('シェア用URLをコピーしました！SNSやLINEで共有してください✨\n\n' + shareUrl);
+  };
+
+  useEffect(() => {
+    if (products.length === 0) return;
+    
+    // 既存のJSON-LDを削除
+    const existingScript = document.getElementById('jsonld-schema');
+    if (existingScript) existingScript.remove();
+
+    // 上位10個の商品で構造化データを生成
+    const topProducts = products.slice(0, 10);
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "itemListElement": topProducts.map((p, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "Product",
+          "name": p.name,
+          "image": p.image,
+          "brand": {
+            "@type": "Brand",
+            "name": p.brand
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": p.priceValue,
+            "priceCurrency": "JPY"
+          },
+          "aggregateRating": p.rating ? {
+            "@type": "AggregateRating",
+            "ratingValue": p.rating,
+            "reviewCount": p.reviewcount || 1
+          } : undefined
+        }
+      }))
+    };
+
+    const script = document.createElement('script');
+    script.id = 'jsonld-schema';
+    script.type = 'application/ld+json';
+    script.innerHTML = JSON.stringify(schema);
+    document.head.appendChild(script);
+  }, [products]);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,9 +156,11 @@ function App() {
     setFavorites(prev => prev.includes(id) ? prev.filter(fId => fId !== id) : [...prev, id]);
   };
 
-  let baseList = showFavorites 
-    ? products.filter(p => favorites.includes(p.id))
-    : products;
+  let baseList = sharedIds.length > 0
+    ? products.filter(p => sharedIds.includes(p.id))
+    : (showFavorites 
+        ? products.filter(p => favorites.includes(p.id))
+        : products);
 
   let categoryProducts = activeCategory === 'すべて' 
     ? baseList 
@@ -164,6 +236,65 @@ function App() {
 
         <div className="app-content-wrapper">
           <div className="main-content">
+            {sharedIds.length > 0 && (
+              <div className="shared-banner" style={{
+                background: 'rgba(255, 107, 129, 0.08)',
+                border: '1px solid var(--primary-color)',
+                borderRadius: '16px',
+                padding: '16px 20px',
+                marginBottom: '20px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px'
+              }}>
+                <div>
+                  <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--primary-color)' }}>👥 シェアされたおすすめトレンド</span>
+                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-secondary)' }}>誰かがセレクトしたおすすめのコスメ一覧です（{finalProducts.length}件）</p>
+                </div>
+                <button 
+                  onClick={clearShareView}
+                  style={{
+                    background: 'var(--primary-gradient)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '20px',
+                    padding: '8px 16px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  すべての商品を見る ➡️
+                </button>
+              </div>
+            )}
+
+            {showFavorites && favorites.length > 0 && sharedIds.length === 0 && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                <button 
+                  onClick={shareFavorites}
+                  style={{
+                    background: 'var(--primary-gradient)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '20px',
+                    padding: '10px 20px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 10px rgba(255, 107, 129, 0.3)'
+                  }}
+                >
+                  🔗 このお気に入りリストをSNSでシェア
+                </button>
+              </div>
+            )}
+
             {isLoading ? (
               <div className="trend-grid">
                 {[1, 2, 3, 4, 5, 6].map(i => <SkeletonCard key={i} />)}
@@ -189,7 +320,7 @@ function App() {
         onClose={() => setModalProduct(null)} 
       />
 
-      <AIChatWindow />
+      <AIChatWindow products={products} onOpenModal={setModalProduct} />
 
       <button 
         className={`scroll-to-top-btn ${showScrollTop ? 'visible' : ''}`} 

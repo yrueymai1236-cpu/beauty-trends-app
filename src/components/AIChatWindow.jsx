@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const AIChatWindow = () => {
+const AIChatWindow = ({ products = [], onOpenModal }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'ai', content: 'こんにちは！TrendGlowの専属AI美容部員です✨ 乾燥肌のお悩みや、予算に合わせたおすすめコスメなど、何でも聞いてくださいね！' }
+    { role: 'ai', content: 'こんにちは！TrendGlowの専属AI美容部員です✨ 乾燥肌のお悩みや、予算に合わせたおすすめコスメなど、何でも聞いてくださいね！', recs: [] }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,9 +35,24 @@ const AIChatWindow = () => {
       });
       const data = await res.json();
       
-      setMessages(prev => [...prev, { role: 'ai', content: data.reply || 'エラーが発生しました。' }]);
+      let reply = data.reply || 'エラーが発生しました。';
+      let recProducts = [];
+
+      // [RECS: Product1, Product2] を検出してパース
+      const recsMatch = reply.match(/\[RECS:\s*([^\]]+)\]/);
+      if (recsMatch) {
+        const productNames = recsMatch[1].split(',').map(name => name.trim());
+        productNames.forEach(name => {
+          const match = products.find(p => p.name === name || p.name.includes(name) || name.includes(p.name));
+          if (match) recProducts.push(match);
+        });
+        // メッセージ本文から推奨製品のタグを取り除く
+        reply = reply.replace(/\[RECS:\s*[^\]]+\]/, '').trim();
+      }
+
+      setMessages(prev => [...prev, { role: 'ai', content: reply, recs: recProducts }]);
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'ai', content: '通信エラーが発生しました。もう一度お試しください！' }]);
+      setMessages(prev => [...prev, { role: 'ai', content: '通信エラーが発生しました。もう一度お試しください！', recs: [] }]);
     } finally {
       setIsLoading(false);
     }
@@ -71,13 +86,45 @@ const AIChatWindow = () => {
           {messages.map((msg, i) => (
             <div key={i} className={`chat-bubble-container ${msg.role}`}>
               {msg.role === 'ai' && <div className="chat-avatar">🤖</div>}
-              <div className={`chat-bubble ${msg.role}`}>
-                {msg.content.split('\n').map((line, j) => (
-                  <React.Fragment key={j}>
-                    {line}
-                    <br />
-                  </React.Fragment>
-                ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '100%' }}>
+                <div className={`chat-bubble ${msg.role}`}>
+                  {msg.content.split('\n').map((line, j) => (
+                    <React.Fragment key={j}>
+                      {line}
+                      <br />
+                    </React.Fragment>
+                  ))}
+                </div>
+                {msg.recs && msg.recs.length > 0 && (
+                  <div className="chat-recs" style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {msg.recs.map(prod => (
+                      <button 
+                        key={prod.id} 
+                        className="chat-rec-btn" 
+                        onClick={() => onOpenModal(prod)}
+                        style={{
+                          background: 'var(--card-bg)',
+                          border: '1px solid var(--border-color)',
+                          color: 'var(--primary-color)',
+                          borderRadius: '12px',
+                          padding: '8px 12px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          boxShadow: 'var(--shadow-sm)',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        🛍️ {prod.brand} {prod.name.length > 18 ? prod.name.substring(0, 18) + '...' : prod.name}
+                        {prod.priceValue ? ` (¥${prod.priceValue.toLocaleString()})` : ''}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           ))}
