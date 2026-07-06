@@ -165,10 +165,9 @@ async function runUpdater() {
         });
       }
       
-      const { error: deleteError } = await supabase.from('products').delete().neq('id', 0); 
-      const { error: insertError } = await supabase.from('products').insert(fallbackProducts);
-      if (insertError) console.error("Insert Error:", insertError);
-      console.log("Fallback data with real images inserted.");
+      await syncProductsToDB(fallbackProducts);
+      await recordRanksAndNotify();
+      console.log("Fallback data with real images synced.");
       return;
     }
 
@@ -209,19 +208,144 @@ async function runUpdater() {
 
     console.log(`AI extracted ${products.length} products.`);
 
-    // 3. Supabaseにデータを保存（全入れ替えのシンプルなロジック）
-    console.log("Saving data to Supabase...");
-    
-    const { error: deleteError } = await supabase.from('products').delete().neq('id', 0); 
-    if (deleteError) console.warn("Delete error:", deleteError);
-
-    const { error: insertError } = await supabase.from('products').insert(products);
-    if (insertError) throw insertError;
-
+    // 3. Supabaseにデータを保存（Permanent ID Sync）
+    await syncProductsToDB(products);
+    await recordRanksAndNotify();
     console.log("Trend Updater finished successfully!");
     
   } catch (error) {
     console.error("Error in trend updater:", error);
+  }
+}
+
+// --- 永続IDシンクロジック ---
+async function syncProductsToDB(newProductsList) {
+  console.log(`Syncing ${newProductsList.length} products to database (preserves IDs)...`);
+  const { data: existingProducts, error: fetchError } = await supabase
+    .from('products')
+    .select('id, name');
+    
+  if (fetchError) throw fetchError;
+  
+  const existingMap = {};
+  if (existingProducts) {
+    existingProducts.forEach(p => {
+      existingMap[p.name] = p.id;
+    });
+  }
+  
+  const toUpsert = [];
+  const processedNames = new Set();
+  
+  newProductsList.forEach(p => {
+    if (processedNames.has(p.name)) return;
+    processedNames.add(p.name);
+    
+    const item = { ...p };
+    // 名前がすでに存在する場合、そのIDを引き継ぐことで更新(UPDATE)扱いにする
+    if (existingMap[p.name]) {
+      item.id = existingMap[p.name];
+    }
+    toUpsert.push(item);
+  });
+
+  const { error: upsertError } = await supabase
+    .from('products')
+    .upsert(toUpsert);
+    
+  if (upsertError) throw upsertError;
+  console.log(`Successfully synced ${toUpsert.length} products (insert/update).`);
+}
+
+// --- 順位履歴記録＆プッシュ通知配信 ---
+async function recordRanksAndNotify() {
+  try {
+    const { data: updatedProducts, error: fetchError } = await supabase
+      .from('products')
+      .select('id, name, brand')
+      .order('likes', { ascending: false });
+      
+    if (fetchError || !updatedProducts || updatedProducts.length === 0) return;
+    
+    // 順位履歴の挿入（上位50件）
+    const today = new Date().toISOString().split('T')[0];
+    const rankHistories = updatedProducts.slice(0, 50).map((p, index) => ({
+      product_id: p.id,
+      rank: index + 1,
+      recorded_date: today
+    }));
+    
+    console.log(`Recording rank history for top 50 products...`);
+    const { error: historyError } = await supabase
+      .from('rank_history')
+      .upsert(rankHistories, { onConflict: 'product_id,recorded_date' });
+      
+    if (historyError) {
+      console.error("Failed to record rank history:", historyError.message);
+    }
+    
+    // 1位商品のプッシュ通知配信
+    const topProduct = updatedProducts[0];
+    await sendPushNotification(topProduct);
+  } catch (err) {
+    console.error("Failed to record ranks and notify:", err.message);
+  }
+}
+
+// --- プッシュ通知一斉配信ヘルパー ---
+async function sendPushNotification(product) {
+  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    console.warn("VAPID keys not set. Skipping push notifications.");
+    return;
+  }
+  
+  try {
+    const webpush = require('web-push');
+    webpush.setVapidDetails(
+      'mailto:support@trendglow.beauty',
+      process.env.VAPID_PUBLIC_KEY,
+      process.env.VAPID_PRIVATE_KEY
+    );
+    
+    const { data: subscribers, error } = await supabase
+      .from('push_subscriptions')
+      .select('subscription');
+      
+    if (error) throw error;
+    if (!subscribers || subscribers.length === 0) {
+      console.log("No push subscribers found.");
+      return;
+    }
+    
+    console.log(`Sending push notifications to ${subscribers.length} devices...`);
+    const payload = JSON.stringify({
+      title: '✨ 本日の美容トレンド1位発表！ ✨',
+      body: `【${product.brand}】${product.name} が本日の人気No.1に輝きました！`,
+      icon: '/icon-192x192.png',
+      data: {
+        url: `/?share=${product.id}`
+      }
+    });
+    
+    let successCount = 0;
+    for (const sub of subscribers) {
+      try {
+        await webpush.sendNotification(sub.subscription, payload);
+        successCount++;
+      } catch (err) {
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          await supabase
+            .from('push_subscriptions')
+            .delete()
+            .eq('subscription->>endpoint', sub.subscription.endpoint);
+        } else {
+          console.error("Push delivery error:", err.message);
+        }
+      }
+    }
+    console.log(`Sent ${successCount} push notifications.`);
+  } catch (err) {
+    console.error("Push trigger failed:", err.message);
   }
 }
 

@@ -32,6 +32,73 @@ function App() {
   const [displayCount, setDisplayCount] = useState(20);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sharedIds, setSharedIds] = useState([]);
+  const [isPushEnabled, setIsPushEnabled] = useState(false);
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator && 'PushManager' in window) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.pushManager.getSubscription().then(sub => {
+          setIsPushEnabled(!!sub);
+        });
+      });
+    }
+  }, []);
+
+  const togglePushSubscription = async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      alert('お使いのブラウザはプッシュ通知に対応していません。');
+      return;
+    }
+
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      
+      if (isPushEnabled) {
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          await sub.unsubscribe();
+          setIsPushEnabled(false);
+          alert('通知をオフにしました。');
+        }
+      } else {
+        const keyRes = await fetch('/api/push/key');
+        const { publicKey } = await keyRes.json();
+        if (!publicKey) {
+          alert('プッシュ通知の準備ができていません。');
+          return;
+        }
+
+        const padding = '='.repeat((4 - (publicKey.length % 4)) % 4);
+        const base64 = (publicKey + padding).replace(/\-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+          outputArray[i] = rawData.charCodeAt(i);
+        }
+
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: outputArray
+        });
+
+        const regRes = await fetch('/api/push/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub })
+        });
+
+        if (regRes.ok) {
+          setIsPushEnabled(true);
+          alert('登録完了しました！毎日1位のトレンドコスメを通知します！🔔✨');
+        } else {
+          alert('通知の登録に失敗しました。');
+        }
+      }
+    } catch (err) {
+      console.error("Push toggle failed:", err);
+      alert('プッシュ通知の登録中にエラーが発生しました。ブラウザの設定で通知許可がオンになっているかご確認ください。');
+    }
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -210,6 +277,8 @@ function App() {
         setShowFavorites={setShowFavorites}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        isPushEnabled={isPushEnabled}
+        onTogglePush={togglePushSubscription}
       />
       <main>
         {!showFavorites && <Hero />}

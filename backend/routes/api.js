@@ -102,4 +102,146 @@ router.post('/chat', async (req, res) => {
   }
 });
 
+// --- Web Push 設定 ---
+const webpush = require('web-push');
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:support@trendglow.beauty',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
+
+// 1. AIによる口コミ要約API
+router.get('/trends/:id/summary', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { data: product, error } = await supabase
+      .from('products')
+      .select('brand, name, description, source, review_summary')
+      .eq('id', id)
+      .single();
+
+    if (error || !product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // キャッシュ済みの要約があれば即座に返却
+    if (product.review_summary) {
+      return res.json(product.review_summary);
+    }
+
+    if (!ai) {
+      return res.json({
+        positives: ["SNSでバズり中の人気トレンド商品です", "使い勝手の良さや高い保湿力が評価されています", "口コミでの満足度が非常に高い名品です"],
+        negatives: ["人気のため店舗によって品薄な場合があります", "肌質や好みの香りによって相性があるようです"]
+      });
+    }
+
+    const prompt = `
+      あなたは美容の専門家です。以下のコスメ商品について、ネット上の口コミや評判を分析し、
+      購入を検討しているユーザーに向けて、簡潔な「メリット（良い点）3つ」と「デメリット・注意点2つ」を抽出してください。
+      
+      商品情報:
+      ブランド: ${product.brand}
+      商品名: ${product.name}
+      商品説明: ${product.description}
+      SNS情報: ${product.source}で話題
+
+      必ず以下のJSONフォーマットのみで回答してください。前後のマークダウンや解説文は一切含めないでください。
+      {
+        "positives": ["メリット1", "メリット2", "メリット3"],
+        "negatives": ["デメリット1", "デメリット2"]
+      }
+    `;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+    });
+
+    let summaryText = response.text.trim();
+    if (summaryText.startsWith('```')) {
+      summaryText = summaryText.replace(/^```json\s*/, '').replace(/```$/, '').trim();
+    }
+
+    let summaryJson;
+    try {
+      summaryJson = JSON.parse(summaryText);
+    } catch (e) {
+      console.warn("Failed to parse Gemini summary output as JSON:", summaryText);
+      summaryJson = {
+        positives: ["SNSでバズり中の人気トレンド商品です", "使い心地の良さが評価されています", "満足度が高い名品です"],
+        negatives: ["人気のため品薄な場合があります", "好みの香りや質感で相性があります"]
+      };
+    }
+
+    // データベースにキャッシュ保存
+    await supabase
+      .from('products')
+      .update({ review_summary: summaryJson })
+      .eq('id', id);
+
+    res.json(summaryJson);
+  } catch (err) {
+    console.error('Summary error:', err);
+    res.status(500).json({ error: 'Failed to generate review summary' });
+  }
+});
+
+// 2. 順位推移履歴取得API
+router.get('/trends/:id/history', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const { data, error } = await supabase
+      .from('rank_history')
+      .select('rank, recorded_date')
+      .eq('product_id', id)
+      .order('recorded_date', { ascending: true })
+      .limit(7);
+
+    if (error) throw error;
+    res.json(data || []);
+  } catch (err) {
+    console.error('History error:', err);
+    res.status(500).json({ error: 'Failed to fetch rank history' });
+  }
+});
+
+// 3. プッシュ通知公開キーの取得API
+router.get('/push/key', (req, res) => {
+  res.json({ publicKey: process.env.VAPID_PUBLIC_KEY || '' });
+});
+
+// 4. プッシュ通知購読登録API
+router.post('/push/register', async (req, res) => {
+  try {
+    const { subscription } = req.body;
+    if (!subscription || !subscription.endpoint) {
+      return res.status(400).json({ error: 'Subscription data is required' });
+    }
+
+    // 重複登録の防止
+    const { data: existing } = await supabase
+      .from('push_subscriptions')
+      .select('id')
+      .eq('subscription->>endpoint', subscription.endpoint)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      return res.json({ success: true, message: 'Already registered' });
+    }
+
+    const { error } = await supabase
+      .from('push_subscriptions')
+      .insert([{ subscription }]);
+
+    if (error) throw error;
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Push register error:', err);
+    res.status(500).json({ error: 'Failed to register subscription' });
+  }
+});
+
 module.exports = router;

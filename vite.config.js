@@ -8,6 +8,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      workbox: {
+        importScripts: ['/sw-push.js']
+      },
       manifest: {
         name: 'TrendGlow - 最新コスメトレンド',
         short_name: 'TrendGlow',

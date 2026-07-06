@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Header = ({ isDarkMode, setIsDarkMode, showFavorites, setShowFavorites, searchQuery, setSearchQuery }) => {
+const Header = ({ isDarkMode, setIsDarkMode, showFavorites, setShowFavorites, searchQuery, setSearchQuery, isPushEnabled, onTogglePush }) => {
   return (
     <header className="header animate-fade-in">
       <h1 className="logo text-gradient" style={{ margin: 0, padding: 0 }}>
@@ -38,6 +38,14 @@ const Header = ({ isDarkMode, setIsDarkMode, showFavorites, setShowFavorites, se
           onClick={() => setShowFavorites(!showFavorites)}
         >
           {showFavorites ? '💖 お気に入り一覧' : '🤍 お気に入り一覧'}
+        </button>
+        <button 
+          className={`action-btn ${isPushEnabled ? 'active' : ''}`}
+          onClick={onTogglePush}
+          title={isPushEnabled ? 'プッシュ通知をオフにする' : '毎日1位のコスメの通知を受け取る'}
+          style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+        >
+          {isPushEnabled ? '🔔 通知中' : '🔕 通知を受け取る'}
         </button>
         <button 
           className="action-btn theme-toggle"
