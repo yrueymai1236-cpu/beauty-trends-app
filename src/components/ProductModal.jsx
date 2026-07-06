@@ -1,132 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-const RankHistoryChart = ({ history }) => {
-  if (!history || history.length < 2) {
-    return (
-      <div style={{ textAlign: 'center', padding: '16px', color: 'var(--text-secondary)', fontSize: '12px' }}>
-        📊 順位履歴を収集しています... (明日以降に推移グラフが表示されます)
-      </div>
-    );
-  }
-
-  const paddingLeft = 35;
-  const paddingRight = 15;
-  const paddingTop = 20;
-  const paddingBottom = 20;
-  const chartWidth = 320;
-  const chartHeight = 85;
-
-  const ranks = history.map(h => h.rank);
-  const maxRank = Math.max(...ranks);
-  const minRank = Math.min(...ranks);
-
-  const graphMin = Math.max(1, minRank - 1);
-  const graphMax = maxRank + 1;
-  const graphRange = graphMax - graphMin === 0 ? 4 : graphMax - graphMin;
-
-  const points = history.map((h, i) => {
-    const x = paddingLeft + (i * (chartWidth / (history.length - 1)));
-    const y = paddingTop + ((h.rank - graphMin) / graphRange) * chartHeight;
-    return { x, y, rank: h.rank, date: h.recorded_date };
-  });
-
-  const pathD = `M ${points.map(p => `${p.x} ${p.y}`).join(' L ')}`;
-  const areaD = `${pathD} L ${points[points.length - 1].x} ${paddingTop + chartHeight} L ${points[0].x} ${paddingTop + chartHeight} Z`;
-
-  return (
-    <div className="rank-chart-wrapper" style={{ marginTop: '12px' }}>
-      <svg viewBox={`0 0 ${chartWidth + paddingLeft + paddingRight} ${chartHeight + paddingTop + paddingBottom}`} style={{ width: '100%', height: 'auto' }}>
-        <line 
-          x1={paddingLeft} 
-          y1={paddingTop} 
-          x2={paddingLeft + chartWidth} 
-          y2={paddingTop} 
-          stroke="var(--border-color)" 
-          strokeDasharray="4 4" 
-        />
-        <line 
-          x1={paddingLeft} 
-          y1={paddingTop + chartHeight} 
-          x2={paddingLeft + chartWidth} 
-          y2={paddingTop + chartHeight} 
-          stroke="var(--border-color)" 
-        />
-        
-        <text x={paddingLeft - 8} y={paddingTop + 4} textAnchor="end" fontSize="10" fill="var(--text-secondary)" fontWeight="bold">
-          #{graphMin}
-        </text>
-        <text x={paddingLeft - 8} y={paddingTop + chartHeight + 4} textAnchor="end" fontSize="10" fill="var(--text-secondary)">
-          #{graphMax}
-        </text>
-
-        <path 
-          d={areaD} 
-          fill="url(#chart-gradient)" 
-          opacity="0.12" 
-        />
-
-        <path 
-          d={pathD} 
-          fill="none" 
-          stroke="var(--primary-color)" 
-          strokeWidth="3" 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-        />
-
-        {points.map((p, i) => (
-          <g key={i}>
-            <circle 
-              cx={p.x} 
-              cy={p.y} 
-              r="4" 
-              fill="white" 
-              stroke="var(--primary-color)" 
-              strokeWidth="2" 
-            />
-            <text 
-              x={p.x} 
-              y={p.y - 8} 
-              textAnchor="middle" 
-              fontSize="9" 
-              fontWeight="bold" 
-              fill="var(--primary-color)"
-            >
-              {p.rank}位
-            </text>
-            <text 
-              x={p.x} 
-              y={paddingTop + chartHeight + 15} 
-              textAnchor="middle" 
-              fontSize="9" 
-              fill="var(--text-secondary)"
-            >
-              {p.date.substring(5)}
-            </text>
-          </g>
-        ))}
-
-        <defs>
-          <linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--primary-color)" />
-            <stop offset="100%" stopColor="var(--primary-color)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
-      </svg>
-    </div>
-  );
-};
-
 const ProductModal = ({ product, isOpen, onClose }) => {
   const [summary, setSummary] = useState(null);
-  const [history, setHistory] = useState([]);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !product) return;
 
     setSummary(null);
-    setHistory([]);
     setIsLoadingSummary(true);
 
     fetch(`/api/trends/${product.id}/summary`)
@@ -139,13 +20,6 @@ const ProductModal = ({ product, isOpen, onClose }) => {
         console.error(err);
         setIsLoadingSummary(false);
       });
-
-    fetch(`/api/trends/${product.id}/history`)
-      .then(res => res.json())
-      .then(data => {
-        setHistory(data);
-      })
-      .catch(err => console.error(err));
   }, [isOpen, product]);
 
   if (!isOpen || !product) return null;
@@ -228,13 +102,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
               )}
             </div>
 
-            {/* 順位推移グラフ */}
-            <div className="modal-section" style={{ marginTop: '20px' }}>
-              <h3 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                📈 トレンド順位推移 (過去7日間)
-              </h3>
-              <RankHistoryChart history={history} />
-            </div>
+
             
             <div className="modal-section" style={{ marginTop: '20px' }}>
               <h3>主な年齢層</h3>
