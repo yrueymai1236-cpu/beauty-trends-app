@@ -3,12 +3,11 @@ const supabase = require('../db/supabaseClient');
 async function populate() {
   console.log("Starting mock rank history generator...");
   try {
-    // 1. Get the top 100 products by likes
+    // 1. Get all products by likes
     const { data: products, error: fetchError } = await supabase
       .from('products')
       .select('id, name, brand')
-      .order('likes', { ascending: false })
-      .limit(100);
+      .order('likes', { ascending: false });
       
     if (fetchError) throw fetchError;
     console.log(`Found ${products.length} products to generate mock history.`);
@@ -30,16 +29,18 @@ async function populate() {
         
         let mockRank = currentRank;
         
-        // Calculate mock rank based on day offset and trend type
-        if (trendType === 0) {
-          // Rising trend: ranks were larger (worse) in the past
-          mockRank = currentRank + (6 - dayOffset) * (Math.floor(Math.random() * 2) + 1);
-        } else if (trendType === 1) {
-          // Falling trend: ranks were smaller (better) in the past
-          mockRank = currentRank - (6 - dayOffset) * (Math.floor(Math.random() * 2) + 1);
-        } else {
-          // Fluctuating: random variation
-          mockRank = currentRank + Math.floor(Math.random() * 6 - 3);
+        // Calculate mock rank based on day offset and trend type (dayOffset = 0 is today, matching currentRank)
+        if (dayOffset > 0) {
+          if (trendType === 0) {
+            // Rising trend: ranks were larger (worse) in the past (e.g. 1st today, was 7th)
+            mockRank = currentRank + dayOffset * (Math.floor(Math.random() * 2) + 1);
+          } else if (trendType === 1) {
+            // Falling trend: ranks were smaller (better) in the past (e.g. 10th today, was 4th)
+            mockRank = currentRank - dayOffset * (Math.floor(Math.random() * 2) + 1);
+          } else {
+            // Fluctuating: random variation
+            mockRank = currentRank + Math.floor(Math.random() * 4 - 2);
+          }
         }
         
         // Clamp rank to a minimum of 1
@@ -53,14 +54,19 @@ async function populate() {
       }
     });
 
-    console.log(`Inserting ${rankHistories.length} historical records into rank_history table...`);
+    console.log(`Inserting ${rankHistories.length} historical records in chunks of 1000...`);
     
-    // Supabase upsert
-    const { error: upsertError } = await supabase
-      .from('rank_history')
-      .upsert(rankHistories, { onConflict: 'product_id,recorded_date' });
-      
-    if (upsertError) throw upsertError;
+    // Chunked Supabase upsert
+    const chunkSize = 1000;
+    for (let i = 0; i < rankHistories.length; i += chunkSize) {
+      const chunk = rankHistories.slice(i, i + chunkSize);
+      const { error: upsertError } = await supabase
+        .from('rank_history')
+        .upsert(chunk, { onConflict: 'product_id,recorded_date' });
+        
+      if (upsertError) throw upsertError;
+      console.log(`  Upserted chunk ${Math.floor(i / chunkSize) + 1}/${Math.ceil(rankHistories.length / chunkSize)}`);
+    }
     
     console.log("Mock rank history generated and inserted successfully!");
   } catch (e) {
