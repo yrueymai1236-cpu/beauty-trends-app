@@ -25,18 +25,28 @@ app.use((req, res) => {
 });
 
 // --- Cron Job Setup ---
-// 毎日深夜0時0分に自動実行
+// 1. 午前9:00 (JST) / 00:00 (UTC) : トレンドデータを更新し、1位の商品をXに投稿
 cron.schedule('0 0 * * *', async () => {
-  console.log('Running daily trend updater cron job...');
+  console.log('Running morning trend updater and X post (Rank 1)...');
   try {
     await runUpdater();
     console.log('Daily trend updater completed successfully.');
     
-    // 更新後にXにポスト
     const postX = require('./scripts/postX');
-    await postX();
+    await postX(1); // 1位の商品を投稿
   } catch (err) {
-    console.error("Error running daily cron workflow:", err.message);
+    console.error("Error running morning cron workflow:", err.message);
+  }
+});
+
+// 2. 午後20:00 (JST) / 11:00 (UTC) : 2位の注目商品をXにピックアップ投稿
+cron.schedule('0 11 * * *', async () => {
+  console.log('Running evening X pickup post (Rank 2)...');
+  try {
+    const postX = require('./scripts/postX');
+    await postX(2); // 2位の商品を投稿
+  } catch (err) {
+    console.error("Error running evening cron workflow:", err.message);
   }
 });
 
