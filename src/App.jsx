@@ -281,7 +281,7 @@ function App() {
         onTogglePush={togglePushSubscription}
       />
       <main>
-        {!showFavorites && <Hero />}
+        {!showFavorites && <Hero products={products} onOpenModal={setModalProduct} />}
         
         {showFavorites && <h2 style={{marginBottom: '24px'}}>お気に入りリスト</h2>}
 
