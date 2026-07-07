@@ -88,7 +88,21 @@ async function runUpdater() {
         } else {
           // キャッシュがない場合のみ新規スクレイピング
           try {
-            const query = encodeURIComponent(`${item.brand} ${item.name}`);
+            let searchQuery = `${item.brand} ${item.name}`;
+            const isShampooOrSimilar = item.name.includes("シャンプー") || item.name.includes("トリートメント") || item.name.includes("ボディソープ") || item.name.includes("コンディショナー");
+            const isCleanserOrWash = item.name.includes("クレンジング") || item.name.includes("洗顔");
+
+            if (isShampooOrSimilar) {
+              if (!item.name.includes("本体") && !item.name.includes("ボトル") && !item.name.includes("ポンプ")) {
+                searchQuery += " ポンプ 単品";
+              }
+            } else if (isCleanserOrWash) {
+              if (!item.name.includes("本体") && !item.name.includes("ボトル")) {
+                searchQuery += " 本体 単品";
+              }
+            }
+
+            const query = encodeURIComponent(searchQuery);
             const res = await axios.get(`https://search.rakuten.co.jp/search/mall/${query}/`, {
               headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -107,10 +121,24 @@ async function runUpdater() {
                   }
                 });
                 const $y = cheerio.load(yRes.data);
-                const yImg = $y('img').filter((i, el) => {
-                  const src = $y(el).attr('src') || '';
-                  return src.includes('item-shopping.c.yimg.jp');
-                }).first().attr('src');
+                const blacklistKeywords = ["詰め替え", "つめかえ", "レフィル", "詰替", "セット", "大容量", "2個", "3個", "2本", "3本", "2点", "3点", "コフレ", "アソート", "ペア", "まとめ買い", "×2", "×3", "x2", "x3", "3倍", "2倍", "＆トリートメント", "&トリートメント", "シャンプートリートメント"];
+                
+                let yImg = '';
+                $y('[class*="SearchResultItem_"]').each((i, el) => {
+                  const text = $y(el).text();
+                  let hasBlacklistWord = false;
+                  for (const word of blacklistKeywords) {
+                    if (!item.name.includes(word) && text.includes(word)) {
+                      hasBlacklistWord = true;
+                      break;
+                    }
+                  }
+                  const imgEl = $y(el).find('img').filter((j, img) => ($y(img).attr('src') || '').includes('item-shopping.c.yimg.jp')).first();
+                  if (!hasBlacklistWord && imgEl.length > 0) {
+                    yImg = imgEl.attr('src');
+                    return false;
+                  }
+                });
                 if (yImg) {
                   imageUrl = yImg;
                   console.log(`  Fetched image from Yahoo fallback: ${imageUrl}`);
