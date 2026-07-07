@@ -262,4 +262,27 @@ router.get('/config', (req, res) => {
   });
 });
 
+// 6. 画像のCORS回避プロキシAPI
+router.get('/proxy-image', async (req, res) => {
+  const { url } = req.query;
+  if (!url) {
+    return res.status(400).send('URL is required');
+  }
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch image');
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(buffer);
+  } catch (err) {
+    console.error('Image proxy error:', err);
+    res.status(500).send('Failed to proxy image');
+  }
+});
+
 module.exports = router;

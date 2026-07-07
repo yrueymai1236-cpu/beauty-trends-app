@@ -16,7 +16,8 @@ const InstaGeneratorModal = ({ products = [], isOpen, onClose }) => {
         }
         const img = new Image();
         img.crossOrigin = "anonymous";
-        img.src = url;
+        // CORS回避のため、バックエンドのプロキシ経由で画像を取得
+        img.src = `/api/proxy-image?url=${encodeURIComponent(url)}`;
         img.onload = () => resolve(img);
         img.onerror = () => resolve(null);
       });
