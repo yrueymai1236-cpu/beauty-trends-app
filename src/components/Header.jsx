@@ -31,13 +31,14 @@ const Header = ({ isDarkMode, setIsDarkMode, showFavorites, setShowFavorites, se
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.008 4.076H5.078z"/>
           </svg>
-          シェア
+          <span className="btn-text">シェア</span>
         </a>
         <button 
           className={`action-btn ${showFavorites ? 'active' : ''}`}
           onClick={() => setShowFavorites(!showFavorites)}
         >
-          {showFavorites ? '💖 お気に入り一覧' : '🤍 お気に入り一覧'}
+          <span>{showFavorites ? '💖' : '🤍'}</span>
+          <span className="btn-text">お気に入り一覧</span>
         </button>
         <button 
           className={`action-btn ${isPushEnabled ? 'active' : ''}`}
@@ -45,7 +46,8 @@ const Header = ({ isDarkMode, setIsDarkMode, showFavorites, setShowFavorites, se
           title={isPushEnabled ? 'プッシュ通知をオフにする' : '毎日1位のコスメの通知を受け取る'}
           style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
         >
-          {isPushEnabled ? '🔔 通知中' : '🔕 通知を受け取る'}
+          <span>{isPushEnabled ? '🔔' : '🔕'}</span>
+          <span className="btn-text">{isPushEnabled ? '通知中' : '通知を受け取る'}</span>
         </button>
         <button 
           className="action-btn theme-toggle"
