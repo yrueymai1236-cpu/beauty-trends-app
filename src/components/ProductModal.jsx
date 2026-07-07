@@ -56,7 +56,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
               )}
             </div>
 
-            <p className="modal-desc">{product.description || "現在AIが詳細情報を収集中です..."}</p>
+            <p className="modal-desc">{(summary && summary.description) || product.description || (isLoadingSummary ? "詳細情報を読み込み中..." : "現在AIが詳細情報を収集中です...")}</p>
 
             {/* AI 口コミ要約 */}
             <div className="modal-section" style={{ marginTop: '20px' }}>

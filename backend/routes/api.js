@@ -9,10 +9,10 @@ router.get('/trends', async (req, res) => {
       return res.status(500).json({ error: 'Database connection is not configured.' });
     }
 
-    // Supabaseのproductsテーブルから全てのデータを取得し、likesの降順でソート
+    // Supabaseのproductsテーブルから必要な軽量データのみを取得し、likesの降順でソート
     const { data, error } = await supabase
       .from('products')
-      .select('*')
+      .select('id, name, brand, category, subCategory, priceValue, image, rating, reviewcount, likes, source')
       .order('likes', { ascending: false });
 
     if (error) {
@@ -128,11 +128,16 @@ router.get('/trends/:id/summary', async (req, res) => {
 
     // キャッシュ済みの要約があれば即座に返却
     if (product.review_summary) {
-      return res.json(product.review_summary);
+      return res.json({
+        description: product.description,
+        positives: product.review_summary.positives,
+        negatives: product.review_summary.negatives
+      });
     }
 
     if (!ai) {
       return res.json({
+        description: product.description,
         positives: ["SNSでバズり中の人気トレンド商品です", "使い勝手の良さや高い保湿力が評価されています", "口コミでの満足度が非常に高い名品です"],
         negatives: ["人気のため店舗によって品薄な場合があります", "肌質や好みの香りによって相性があるようです"]
       });
@@ -182,7 +187,11 @@ router.get('/trends/:id/summary', async (req, res) => {
       .update({ review_summary: summaryJson })
       .eq('id', id);
 
-    res.json(summaryJson);
+    res.json({
+      description: product.description,
+      positives: summaryJson.positives,
+      negatives: summaryJson.negatives
+    });
   } catch (err) {
     console.error('Summary error:', err);
     res.status(500).json({ error: 'Failed to generate review summary' });
