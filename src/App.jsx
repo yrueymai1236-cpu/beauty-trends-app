@@ -433,6 +433,9 @@ function App() {
             プライバシーポリシー
           </button>
         </div>
+        <p style={{ margin: '0 0 6px 0', fontSize: '11px', opacity: 0.8 }}>
+          ※本サイトに掲載されている商品リンクには、アフィリエイト広告・提携プログラムが含まれています。
+        </p>
         <p style={{ margin: 0 }}>© {new Date().getFullYear()} TrendGlow. All rights reserved.</p>
       </footer>
 
