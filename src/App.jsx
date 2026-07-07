@@ -34,6 +34,17 @@ function App() {
   const [legalModalType, setLegalModalType] = useState(null); // 'terms' | 'privacy' | null
   const [isInstaModalOpen, setIsInstaModalOpen] = useState(false);
   const [affiliateConfig, setAffiliateConfig] = useState(null);
+  
+  // シークレットURL（?admin=true）でアクセスした時だけ管理者モードをONにする
+  const [isAdmin, setIsAdmin] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') === 'true') {
+      sessionStorage.setItem('trendglow_admin', 'true');
+      return true;
+    }
+    return sessionStorage.getItem('trendglow_admin') === 'true';
+  });
+
   const [displayCount, setDisplayCount] = useState(20);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sharedIds, setSharedIds] = useState([]);
@@ -316,7 +327,7 @@ function App() {
         setSearchQuery={setSearchQuery}
         isPushEnabled={isPushEnabled}
         onTogglePush={togglePushSubscription}
-        onOpenInstaModal={() => setIsInstaModalOpen(true)}
+        onOpenInstaModal={isAdmin ? () => setIsInstaModalOpen(true) : null}
       />
       <main>
         {!showFavorites && <Hero products={products} onOpenModal={setModalProduct} />}
