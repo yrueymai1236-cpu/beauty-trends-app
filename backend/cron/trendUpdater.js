@@ -10,6 +10,62 @@ const path = require('path');
 const apifyClient = new ApifyClient({ token: process.env.APIFY_API_TOKEN });
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
+const synonyms = {
+  'nalow': ['ナロウ'],
+  'yolu': ['ヨル'],
+  'lipps': ['リップス'],
+  'clio': ['クリオ'],
+  'fancl': ['ファンケル'],
+  'senka': ['専科', 'センカ'],
+  'naturie': ['ナチュリエ'],
+  'ettusais': ['エテュセ'],
+  'arimino': ['アリミノ'],
+  'd-up': ['ディーアップ', 'dup'],
+  'mude': ['ミュード'],
+  'matsukiyo': ['マツキヨ', 'マツモトキヨシ'],
+  'one by kosé': ['コーセー', 'kose', 'ワンバイコーセー'],
+  'vt': ['ブイティー'],
+  'duo': ['デュオ'],
+  'shiro': ['シロ'],
+  'hadakara': ['ハダカラ'],
+  'botanist': ['ボタニスト'],
+  'diane': ['ダイアン'],
+  'fino': ['フィーノ'],
+  'milbon': ['ミルボン'],
+  'ululis': ['ウルリス'],
+  '8 the thalasso': ['エイトザタラソ'],
+  'amino mason': ['アミノメイソン'],
+  'honeyque': ['ハニーク'],
+  'cocone': ['ココネ'],
+  'pyuan': ['ピュアン'],
+  'olaplex': ['オラプレックス'],
+  'john masters organics': ['ジョンマスター'],
+  'pantene': ['パンテーン'],
+  'aqualabel': ['アクアレーベル'],
+  'canmake': ['キャンメイク'],
+  'etude house': ['エチュード'],
+  'mediheal': ['メディヒール'],
+  'marks&web': ['マークス'],
+  'l\'air de savon': ['レールデュサボン'],
+  'aux paradis': ['オゥパラディ']
+};
+
+function brandMatches(brand, title) {
+  if (!brand) return true;
+  const b = brand.toLowerCase().trim();
+  const t = title.toLowerCase().trim();
+  if (t.includes(b)) return true;
+  
+  for (const key in synonyms) {
+    if (b.includes(key) || key.includes(b)) {
+      for (const syn of synonyms[key]) {
+        if (t.includes(syn)) return true;
+      }
+    }
+  }
+  return false;
+}
+
 async function runUpdater() {
   console.log("Starting Trend Updater...");
   
@@ -109,8 +165,21 @@ async function runUpdater() {
               }
             });
             const $ = cheerio.load(res.data);
-            let img = $('.searchresultitem img').first().attr('src');
-            if (img) imageUrl = img.split('?')[0];
+            
+            // 楽天でのブランド名チェックを伴う画像抽出
+            let img = '';
+            $('.searchresultitem').each((idx, el) => {
+              const title = $(el).find('.title').first().text() || $(el).find('a').first().text() || '';
+              const matchesBrand = brandMatches(item.brand, title);
+              const imgEl = $(el).find('img').first();
+              if (matchesBrand && imgEl.length > 0) {
+                img = imgEl.attr('src');
+                if (img) {
+                  imageUrl = img.split('?')[0];
+                  return false;
+                }
+              }
+            });
 
             // 楽天で画像が取れなかった場合、Yahoo!ショッピングからフォールバック取得
             if (!imageUrl) {
@@ -126,6 +195,9 @@ async function runUpdater() {
                 let yImg = '';
                 $y('[class*="SearchResultItem_"]').each((i, el) => {
                   const text = $y(el).text();
+                  const title = $y(el).find('[class*="ItemTitle_"]').first().text() || $y(el).find('a').first().text() || '';
+                  const matchesBrand = brandMatches(item.brand, title);
+                  
                   let hasBlacklistWord = false;
                   for (const word of blacklistKeywords) {
                     if (!item.name.includes(word) && text.includes(word)) {
@@ -133,8 +205,9 @@ async function runUpdater() {
                       break;
                     }
                   }
+                  
                   const imgEl = $y(el).find('img').filter((j, img) => ($y(img).attr('src') || '').includes('item-shopping.c.yimg.jp')).first();
-                  if (!hasBlacklistWord && imgEl.length > 0) {
+                  if (!hasBlacklistWord && imgEl.length > 0 && matchesBrand) {
                     yImg = imgEl.attr('src');
                     return false;
                   }
