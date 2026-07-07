@@ -6,6 +6,7 @@ import SubCategoryFilter from './components/SubCategoryFilter';
 import SortFilter from './components/SortFilter';
 import TrendList from './components/TrendList';
 import ProductModal from './components/ProductModal';
+import LegalModal from './components/LegalModal';
 import SkeletonCard from './components/SkeletonCard';
 import Sidebar from './components/Sidebar';
 import AIChatWindow from './components/AIChatWindow';
@@ -29,6 +30,7 @@ function App() {
   const [activeSubCategory, setActiveSubCategory] = useState('すべて');
   const [sortType, setSortType] = useState('recommend');
   const [modalProduct, setModalProduct] = useState(null);
+  const [legalModalType, setLegalModalType] = useState(null); // 'terms' | 'privacy' | null
   const [displayCount, setDisplayCount] = useState(20);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sharedIds, setSharedIds] = useState([]);
@@ -407,6 +409,38 @@ function App() {
       />
 
       <AIChatWindow products={products} onOpenModal={setModalProduct} />
+
+      <footer className="app-footer" style={{
+        textAlign: 'center',
+        padding: '30px 20px',
+        marginTop: '60px',
+        borderTop: '1px solid var(--border-color)',
+        color: 'var(--text-secondary)',
+        fontSize: '12px'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginBottom: '8px', alignItems: 'center' }}>
+          <button 
+            onClick={() => setLegalModalType('terms')} 
+            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px', padding: '4px 8px' }}
+          >
+            利用規約
+          </button>
+          <span style={{ color: 'var(--border-color)' }}>|</span>
+          <button 
+            onClick={() => setLegalModalType('privacy')} 
+            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '12px', padding: '4px 8px' }}
+          >
+            プライバシーポリシー
+          </button>
+        </div>
+        <p style={{ margin: 0 }}>© {new Date().getFullYear()} TrendGlow. All rights reserved.</p>
+      </footer>
+
+      <LegalModal 
+        type={legalModalType} 
+        isOpen={!!legalModalType} 
+        onClose={() => setLegalModalType(null)} 
+      />
 
       <button 
         className={`scroll-to-top-btn ${showScrollTop ? 'visible' : ''}`} 
