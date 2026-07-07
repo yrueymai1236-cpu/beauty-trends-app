@@ -77,8 +77,7 @@ ${desc}
 
 価格: ¥${item.priceValue ? item.priceValue.toLocaleString() : '未定'} (評価: ⭐${item.rating || '4.5'})
 
-👇 詳細・お気に入り登録はこちら！
-${shareUrl}
+👇 詳細・お気に入り登録はプロフィールのURLからチェック！
 
 ${hashtags}`;
 
