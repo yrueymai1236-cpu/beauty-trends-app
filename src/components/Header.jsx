@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Header = ({ isDarkMode, setIsDarkMode, showFavorites, setShowFavorites, searchQuery, setSearchQuery, isPushEnabled, onTogglePush }) => {
+const Header = ({ isDarkMode, setIsDarkMode, showFavorites, setShowFavorites, searchQuery, setSearchQuery, isPushEnabled, onTogglePush, onOpenInstaModal }) => {
   return (
     <header className="header animate-fade-in">
       <h1 className="logo text-gradient" style={{ margin: 0, padding: 0 }}>
@@ -21,6 +21,15 @@ const Header = ({ isDarkMode, setIsDarkMode, showFavorites, setShowFavorites, se
       </div>
 
       <nav className="header-actions">
+        <button 
+          className="action-btn"
+          onClick={onOpenInstaModal}
+          title="Instagram用まとめ画像を生成"
+          style={{ display: 'flex', alignItems: 'center', gap: '4px' }}
+        >
+          <span>📸</span>
+          <span className="btn-text">画像生成</span>
+        </button>
         <a 
           href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('最新のコスメトレンドをチェック！美容好き必見のトレンド情報👀 #コスメトレンド #美容 #メイク')}&url=${encodeURIComponent('https://beauty-trends-app.onrender.com')}`}
           target="_blank"

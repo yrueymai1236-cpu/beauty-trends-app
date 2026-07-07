@@ -7,6 +7,7 @@ import SortFilter from './components/SortFilter';
 import TrendList from './components/TrendList';
 import ProductModal from './components/ProductModal';
 import LegalModal from './components/LegalModal';
+import InstaGeneratorModal from './components/InstaGeneratorModal';
 import SkeletonCard from './components/SkeletonCard';
 import Sidebar from './components/Sidebar';
 import AIChatWindow from './components/AIChatWindow';
@@ -31,10 +32,27 @@ function App() {
   const [sortType, setSortType] = useState('recommend');
   const [modalProduct, setModalProduct] = useState(null);
   const [legalModalType, setLegalModalType] = useState(null); // 'terms' | 'privacy' | null
+  const [isInstaModalOpen, setIsInstaModalOpen] = useState(false);
+  const [affiliateConfig, setAffiliateConfig] = useState(null);
   const [displayCount, setDisplayCount] = useState(20);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sharedIds, setSharedIds] = useState([]);
   const [isPushEnabled, setIsPushEnabled] = useState(false);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const data = await res.json();
+          setAffiliateConfig(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch affiliate config:", err);
+      }
+    };
+    fetchConfig();
+  }, []);
 
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -298,6 +316,7 @@ function App() {
         setSearchQuery={setSearchQuery}
         isPushEnabled={isPushEnabled}
         onTogglePush={togglePushSubscription}
+        onOpenInstaModal={() => setIsInstaModalOpen(true)}
       />
       <main>
         {!showFavorites && <Hero products={products} onOpenModal={setModalProduct} />}
@@ -406,6 +425,7 @@ function App() {
         product={modalProduct} 
         isOpen={!!modalProduct} 
         onClose={() => setModalProduct(null)} 
+        affiliateConfig={affiliateConfig}
       />
 
       <AIChatWindow products={products} onOpenModal={setModalProduct} />
@@ -443,6 +463,12 @@ function App() {
         type={legalModalType} 
         isOpen={!!legalModalType} 
         onClose={() => setLegalModalType(null)} 
+      />
+
+      <InstaGeneratorModal 
+        products={products} 
+        isOpen={isInstaModalOpen} 
+        onClose={() => setIsInstaModalOpen(false)} 
       />
 
       <button 

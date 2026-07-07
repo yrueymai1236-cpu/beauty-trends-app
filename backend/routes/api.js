@@ -253,4 +253,13 @@ router.post('/push/register', async (req, res) => {
   }
 });
 
+// 5. アフィリエイトID・各種設定の取得API
+router.get('/config', (req, res) => {
+  res.json({
+    amazonTrackingId: process.env.AMAZON_TRACKING_ID || 'hurikake09-22',
+    rakutenAffiliateId: process.env.RAKUTEN_AFFILIATE_ID || '5575e209.dc820559.5575e20a.58f7287d',
+    qoo10AffiliateSu: process.env.QOO10_AFFILIATE_SU || '1467680797'
+  });
+});
+
 module.exports = router;

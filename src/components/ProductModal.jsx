@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const ProductModal = ({ product, isOpen, onClose }) => {
+const ProductModal = ({ product, isOpen, onClose, affiliateConfig }) => {
   const [summary, setSummary] = useState(null);
   const [isLoadingSummary, setIsLoadingSummary] = useState(false);
 
@@ -102,7 +102,6 @@ const ProductModal = ({ product, isOpen, onClose }) => {
               )}
             </div>
 
-
             
             <div className="modal-section" style={{ marginTop: '20px' }}>
               <h3>主な年齢層</h3>
@@ -138,7 +137,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
             <div className="modal-footer">
               <div className="affiliate-buttons">
                 <a 
-                  href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(product.name)}&tag=hurikake09-22`} 
+                  href={`https://www.amazon.co.jp/s?k=${encodeURIComponent(product.name)}&tag=${affiliateConfig?.amazonTrackingId || 'hurikake09-22'}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="aff-btn amazon-btn"
@@ -146,7 +145,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                   Amazonで探す
                 </a>
                 <a 
-                  href={`https://hb.afl.rakuten.co.jp/ichiba/5575e209.dc820559.5575e20a.58f7287d/?pc=${encodeURIComponent('https://search.rakuten.co.jp/search/mall/' + encodeURIComponent(product.name) + '/')}`} 
+                  href={`https://hb.afl.rakuten.co.jp/ichiba/${affiliateConfig?.rakutenAffiliateId || '5575e209.dc820559.5575e20a.58f7287d'}/?pc=${encodeURIComponent('https://search.rakuten.co.jp/search/mall/' + encodeURIComponent(product.name) + '/')}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="aff-btn rakuten-btn"
@@ -154,7 +153,7 @@ const ProductModal = ({ product, isOpen, onClose }) => {
                   楽天市場で探す
                 </a>
                 <a 
-                  href={`https://www.qoo10.jp/s/goodssearch?keyword=${encodeURIComponent(product.name)}&su=1467680797`} 
+                  href={`https://www.qoo10.jp/s/goodssearch?keyword=${encodeURIComponent(product.name)}&su=${affiliateConfig?.qoo10AffiliateSu || '1467680797'}`} 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="aff-btn qoo10-btn"
