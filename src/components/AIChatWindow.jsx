@@ -19,19 +19,17 @@ const AIChatWindow = ({ products = [], onOpenModal }) => {
     }
   }, [messages, isOpen]);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  const submitMessage = async (messageText) => {
+    if (!messageText.trim()) return;
     
-    const userMessage = input.trim();
-    setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setMessages(prev => [...prev, { role: 'user', content: messageText }]);
     setIsLoading(true);
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage })
+        body: JSON.stringify({ message: messageText })
       });
       const data = await res.json();
       
@@ -58,6 +56,18 @@ const AIChatWindow = ({ products = [], onOpenModal }) => {
     }
   };
 
+  const sendMessage = () => {
+    if (!input.trim() || isLoading) return;
+    const text = input.trim();
+    setInput('');
+    submitMessage(text);
+  };
+
+  const handleSuggestionClick = (text) => {
+    if (isLoading) return;
+    submitMessage(text);
+  };
+
   return (
     <>
       {/* Floating Chat Button */}
@@ -68,7 +78,7 @@ const AIChatWindow = ({ products = [], onOpenModal }) => {
       >
         <span style={{ fontSize: '24px' }}>💬</span>
       </button>
-
+ 
       {/* Chat Window */}
       <div className={`chat-window ${isOpen ? 'open' : ''}`}>
         <div className="chat-header">
@@ -81,7 +91,7 @@ const AIChatWindow = ({ products = [], onOpenModal }) => {
           </div>
           <button className="chat-close-btn" onClick={() => setIsOpen(false)}>×</button>
         </div>
-
+ 
         <div className="chat-messages">
           {messages.map((msg, i) => (
             <div key={i} className={`chat-bubble-container ${msg.role}`}>
@@ -139,6 +149,59 @@ const AIChatWindow = ({ products = [], onOpenModal }) => {
             </div>
           )}
           <div ref={messagesEndRef} />
+        </div>
+ 
+        {/* Quick Suggestion Prompts */}
+        <div className="chat-suggestions" style={{
+          display: 'flex',
+          gap: '8px',
+          padding: '8px 12px',
+          overflowX: 'auto',
+          borderTop: '1px solid var(--border-color)',
+          background: 'rgba(var(--primary-color-rgb, 255, 117, 140), 0.02)',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
+        }}>
+          <style>{`
+            .chat-suggestions::-webkit-scrollbar {
+              display: none;
+            }
+          `}</style>
+          {[
+            { label: '🧴 乾燥肌向け', text: '乾燥肌におすすめのスキンケアを教えて' },
+            { label: '💄 今バズってるリップ', text: '今SNSで一番バズっている人気のリップクリームや口紅は？' },
+            { label: '💈 人気のメンズワックス', text: 'メンズヘアセット動画でよく使われる人気のワックスやスタイリング剤を教えて' },
+            { label: '🧼 毛穴ケア洗顔料', text: '毛穴ケアや角栓対策におすすめのプチプラ洗顔料は？' }
+          ].map((s, idx) => (
+            <button
+              key={idx}
+              onClick={() => handleSuggestionClick(s.text)}
+              disabled={isLoading}
+              style={{
+                whiteSpace: 'nowrap',
+                background: 'var(--card-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '20px',
+                padding: '6px 12px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: 'var(--shadow-sm)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.borderColor = 'var(--primary-color)';
+                e.currentTarget.style.color = 'var(--primary-color)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.borderColor = 'var(--border-color)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+              }}
+            >
+              {s.label}
+            </button>
+          ))}
         </div>
 
         <div className="chat-input-area">

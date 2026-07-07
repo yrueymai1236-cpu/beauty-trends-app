@@ -183,6 +183,21 @@ function App() {
 
   useEffect(() => {
     const fetchTrends = async () => {
+      // 1. まずローカルキャッシュからデータを読み込んで即座に表示（0秒起動）
+      const cached = localStorage.getItem('trendglow_products_cache');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setProducts(parsed);
+            setIsLoading(false); // 通信を待たずに画面を表示
+          }
+        } catch (e) {
+          console.warn("Failed to parse products cache:", e);
+        }
+      }
+
+      // 2. バックグラウンドで最新データをサーバーから取得して更新
       try {
         const response = await fetch('/api/trends');
         if (!response.ok) {
@@ -190,6 +205,8 @@ function App() {
         }
         const data = await response.json();
         setProducts(data);
+        // ローカルキャッシュに最新データを保存
+        localStorage.setItem('trendglow_products_cache', JSON.stringify(data));
       } catch (error) {
         console.error("Failed to fetch trends", error);
       } finally {
