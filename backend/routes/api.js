@@ -285,4 +285,37 @@ router.get('/proxy-image', async (req, res) => {
   }
 });
 
+// 7. 外部のCronジョブ（Cron-Job.org等）から呼び出してスリープを回避しつつ投稿を実行するAPI
+router.get('/cron/trigger', async (req, res) => {
+  const { key, rank } = req.query;
+  const secretKey = process.env.CRON_SECRET_KEY || 'trendglow_cron_secret';
+  
+  if (key !== secretKey) {
+    return res.status(401).json({ error: 'Unauthorized key' });
+  }
+
+  const targetRank = parseInt(rank, 10) || 1;
+  console.log(`Cron trigger endpoint called for Rank: ${targetRank}`);
+
+  try {
+    const runUpdater = require('../cron/trendUpdater');
+    const postX = require('../scripts/postX');
+
+    // 1位の時だけスクレイピング（トレンドデータ更新）を行う
+    if (targetRank === 1) {
+      await runUpdater();
+    }
+    
+    const success = await postX(targetRank);
+    if (success) {
+      res.json({ success: true, message: `Successfully posted rank ${targetRank}` });
+    } else {
+      res.status(500).json({ error: 'Failed to post to X' });
+    }
+  } catch (err) {
+    console.error('Cron endpoint error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
