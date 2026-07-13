@@ -64,18 +64,67 @@ async function postX(rank = 1) {
       hashtags += " #デパコス";
     }
 
-    // 順位に応じたタイトルの切り替え
-    const headerTitle = rank === 1 
-      ? `✨ TrendGlow 本日の人気No.1コスメ ✨`
-      : `💖 TrendGlow 本日の注目ピックアップ 💖`;
+    // Gemini AIによる動的ツイート文の生成
+    let generatedText = '';
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        console.log("Generating dynamic tweet using Gemini AI...");
+        const { GoogleGenAI } = require('@google/genai');
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+        
+        const geminiPrompt = `
+          あなたは最新コスメを紹介する人気トレンドアプリ「TrendGlow」の公式SNS担当（Xの投稿担当）です。
+          以下のコスメ商品の特徴、価格、口コミなどを元に、X（旧Twitter）に投稿するための魅力的で親しみやすく、思わずクリックしたくなる日本語の紹介ポストを作成してください。
 
-    const text = `${headerTitle}
+          【商品情報】
+          順位: 第${rank}位
+          ブランド: ${item.brand}
+          商品名: ${item.name}
+          カテゴリー: ${item.category} (サブカテゴリー: ${item.subCategory || 'なし'})
+          価格: ¥${item.priceValue ? item.priceValue.toLocaleString() : '未定'}
+          評価: ⭐${item.rating || '4.5'}
+          特徴: ${desc}
+          
+          【投稿作成ルール】
+          1. 語尾や口調は親しみやすく（「〜だよ！」「〜が凄すぎる…！」「ぜひチェックしてみてね」「これ本当にやばい🥹」などのコスメ垢のようなフランクでワクワクする表現を使ってください）。
+          2. 文字数は120〜140文字程度に収めてください。
+          3. ハッシュタグや外部リンク（URL）は含めないでください（プログラム側で後から自動追加します）。
+          4. 「第${rank}位」または「第${rank}位のバズコスメ」という言葉を必ずどこかに入れてください。
+          5. 余計な説明（「以下が作成したポストです」など）や、マークダウンの引用符などは一切含めず、投稿文のみを出力してください。
+        `;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: geminiPrompt,
+        });
+        
+        generatedText = response.text.trim();
+        // マークダウンのコードブロック等のクリーンアップ
+        if (generatedText.startsWith('`')) {
+          generatedText = generatedText.replace(/^```[a-zA-Z]*\n/, '').replace(/\n```$/, '').replace(/^`|`$/g, '');
+        }
+        console.log("Gemini successfully generated customized tweet!");
+      } catch (geminiErr) {
+        console.error("Gemini tweet generation failed, using fallback template:", geminiErr.message);
+      }
+    }
+
+    if (!generatedText) {
+      // 順位に応じたタイトルの切り替え
+      const headerTitle = rank === 1 
+        ? `✨ TrendGlow 本日の人気No.1コスメ ✨`
+        : `💖 TrendGlow 本日の注目ピックアップ 💖`;
+
+      generatedText = `${headerTitle}
 
 【${item.brand}】${item.name}
 
 ${desc}
 
-価格: ¥${item.priceValue ? item.priceValue.toLocaleString() : '未定'} (評価: ⭐${item.rating || '4.5'})
+価格: ¥${item.priceValue ? item.priceValue.toLocaleString() : '未定'} (評価: ⭐${item.rating || '4.5'})`;
+    }
+
+    const text = `${generatedText}
 
 👇 詳細・お気に入り登録はプロフィールのURLからチェック！
 
