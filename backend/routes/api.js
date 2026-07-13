@@ -294,14 +294,18 @@ router.get('/cron/trigger', async (req, res) => {
     return res.status(401).json({ error: 'Unauthorized key' });
   }
 
-  const targetRank = parseInt(rank, 10) || 1;
+  let targetRank = parseInt(rank, 10);
+  if (rank === 'random' || isNaN(targetRank) || targetRank <= 0) {
+    // 1位〜15位からランダムに選定
+    targetRank = Math.floor(Math.random() * 15) + 1;
+  }
   console.log(`Cron trigger endpoint called for Rank: ${targetRank}`);
 
   try {
     const runUpdater = require('../cron/trendUpdater');
     const postX = require('../scripts/postX');
 
-    // 1位の時だけスクレイピング（トレンドデータ更新）を行う
+    // 1位のときのみスクレイピング（データ更新）を行う
     if (targetRank === 1) {
       await runUpdater();
     }

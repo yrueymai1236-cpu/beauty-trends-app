@@ -25,26 +25,28 @@ app.use((req, res) => {
 });
 
 // --- Cron Job Setup ---
-// 1. 午前9:00 (JST) / 00:00 (UTC) : トレンドデータを更新し、1位の商品をXに投稿
+// 1. 午前9:00 (JST) / 00:00 (UTC) : トレンドデータを更新し、上位1〜5位のランダムな商品をXに投稿
 cron.schedule('0 0 * * *', async () => {
-  console.log('Running morning trend updater and X post (Rank 1)...');
+  console.log('Running morning trend updater and X post...');
   try {
     await runUpdater();
     console.log('Daily trend updater completed successfully.');
     
     const postX = require('./scripts/postX');
-    await postX(1); // 1位の商品を投稿
+    const randomRank = Math.floor(Math.random() * 5) + 1; // 1位〜5位からランダムに選定
+    await postX(randomRank);
   } catch (err) {
     console.error("Error running morning cron workflow:", err.message);
   }
 });
 
-// 2. 午後20:00 (JST) / 11:00 (UTC) : 2位の注目商品をXにピックアップ投稿
+// 2. 午後20:00 (JST) / 11:00 (UTC) : 6〜15位の注目商品をランダムにXにピックアップ投稿
 cron.schedule('0 11 * * *', async () => {
-  console.log('Running evening X pickup post (Rank 2)...');
+  console.log('Running evening X pickup post...');
   try {
     const postX = require('./scripts/postX');
-    await postX(2); // 2位の商品を投稿
+    const randomRank = Math.floor(Math.random() * 10) + 6; // 6位〜15位からランダムに選定
+    await postX(randomRank);
   } catch (err) {
     console.error("Error running evening cron workflow:", err.message);
   }
