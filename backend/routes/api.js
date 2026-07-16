@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../db/supabaseClient');
 
+// 簡易シード乱数生成器
+function seededRandom(seed) {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+}
+
 // 現在はシミュレーターではなくSupabaseからデータを取得する
 router.get('/trends', async (req, res) => {
   try {
@@ -9,11 +15,10 @@ router.get('/trends', async (req, res) => {
       return res.status(500).json({ error: 'Database connection is not configured.' });
     }
 
-    // Supabaseのproductsテーブルから必要な軽量データのみを取得し、likesの降順でソート
+    // Supabaseのproductsテーブルから必要な軽量データのみを取得
     const { data, error } = await supabase
       .from('products')
-      .select('id, name, brand, category, subCategory, priceValue, image, rating, reviewcount, likes, source')
-      .order('likes', { ascending: false });
+      .select('id, name, brand, category, subCategory, priceValue, image, rating, reviewcount, likes, source');
 
     if (error) {
       throw error;
@@ -23,7 +28,25 @@ router.get('/trends', async (req, res) => {
       return res.json([]); 
     }
 
-    res.json(data);
+    // 日本時間の「年月日」をシード値にして毎日順位をマイルドにシャッフルする
+    // これにより、放置していても毎日「おすすめトレンド順」が新鮮に変化する
+    const todayJST = new Date(new Date().getTime() + 9 * 60 * 60 * 1000);
+    const dateSeed = todayJST.getFullYear() * 10000 + (todayJST.getMonth() + 1) * 100 + todayJST.getDate();
+
+    const formattedData = data.map(p => {
+      // 商品固有のIDと日付シードを組み合わせて固有のランダム補正値を計算
+      const seed = dateSeed + (p.id || 0);
+      const randomOffset = (seededRandom(seed) - 0.5) * 800; // ±400いいねの補正
+      return {
+        ...p,
+        likes: Math.max(0, Math.floor((p.likes || 0) + randomOffset))
+      };
+    });
+
+    // 補正後の「いいね数」でソート
+    formattedData.sort((a, b) => b.likes - a.likes);
+
+    res.json(formattedData);
   } catch (error) {
     console.error('API Error:', error);
     res.status(500).json({ error: 'Failed to fetch trends from database' });

@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 const Hero = ({ products, onOpenModal }) => {
-  const topProduct = products && products.length > 0 ? products[0] : null;
+  // 上位5つのトレンド商品からランダムに1つを選んで表示（ページ読み込みごとに変化）
+  const topProduct = useMemo(() => {
+    if (!products || products.length === 0) return null;
+    const pool = products.slice(0, Math.min(5, products.length));
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    return pool[randomIndex];
+  }, [products]);
 
   if (!topProduct) {
     return (
